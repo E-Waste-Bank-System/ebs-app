@@ -1,72 +1,34 @@
 package com.example.ebs.ui.navigation
 
-import androidx.compose.material3.Scaffold
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.ebs.ui.components.DarkLightPreviews
-import com.example.ebs.ui.theme.EBSTheme
-import dev.chrisbanes.haze.HazeState
+import com.example.ebs.ui.navigation.destinations.Route
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MyNavigationg(
-    signedIn: MutableState<Boolean>,
+    signedIn: MutableState<String?>,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
-    val hazeState = remember { HazeState() }
-
-    Scaffold(
-        bottomBar = {
-            if(signedIn.value) {
-                BottomNavigation(
-                    hazeState = hazeState
-                ){
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    NavigationDestinationList.forEach { navItem ->
-                        if (navItem.icon != null) {
-                            BottomNavigationItem(
-                                navItem,
-                                selected = currentDestination
-                                    ?.hierarchy
-                                    ?.any {
-                                        navItem.route == it.route
-                                    } == true,
-                                navController = navController
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    ) { innerPadding ->
+    Surface {
         NavHost(
             navController = navController,
             startDestination = Route.Welcome,
             modifier = modifier
         ) {
-            mainNav(navController,signedIn,hazeState)
+            mainNav(navController, signedIn)
         }
     }
 }
 
-@DarkLightPreviews
-@Composable
-fun PreviewMyNavigationg(){
-    EBSTheme {
-        val signedIn = remember{ mutableStateOf(false) }
-        MyNavigationg(signedIn)
-    }
-}
 
 
 

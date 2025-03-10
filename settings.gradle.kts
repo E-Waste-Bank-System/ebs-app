@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "EBS"
 include(":app")
+include(":shared")

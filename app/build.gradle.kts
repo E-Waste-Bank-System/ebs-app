@@ -4,16 +4,18 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.hilt.android.gradle.plugin)
+    alias(libs.plugins.secrets.plugin)
 }
 
 android {
     namespace = "com.example.ebs"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.ebs"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -44,6 +46,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -57,14 +60,28 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.androidx.datastore.preferences)
     implementation(libs.com.squareup.retrofit2)
     implementation(libs.com.jakewharton.retrofit)
     implementation(libs.io.coil.kt)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.haze.jetpack.compose)  // Added haze-jetpack-compose dependency
+    implementation(libs.haze.jetpack.compose)
     implementation(libs.haze.materials)
+    implementation(platform(libs.bom))
+    implementation(libs.postgrest.kt)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.ktor.client.android)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.compose)
+    ksp(libs.dagger.hilt.compiler)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
