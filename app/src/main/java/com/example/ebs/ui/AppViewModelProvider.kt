@@ -1,19 +1,10 @@
 package com.example.ebs.ui
 
-import android.app.Application
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.ebs.EbsApplication
-
-/**
- * Provides Factory to create instance of ViewModel for the entire Inventory app
- */
+///**
+// * Provides Factory to create instance of ViewModel for the entire Inventory app
+// */
 //object AppViewModelProvider {
 //    val Factory = viewModelFactory {
-//
-//        initializer {
-//            SignInViewModel(EbsApplication().container.itemsRepository)
-//        }
 //
 //        initializer {
 //            SignUpViewModel(EbsApplication().container.itemsRepository)
@@ -45,10 +36,10 @@ import com.example.ebs.EbsApplication
 //        }
 //    }
 //}
-
-/**
- * Extension function to queries for [Application] object and returns an instance of
- * [EbsApplication].
- */
-fun CreationExtras.EbsApplication(): EbsApplication =
-    (this[AndroidViewModelFactory.APPLICATION_KEY] as EbsApplication)
+//
+///**
+// * Extension function to queries for [Application] object and returns an instance of
+// * [EbsApplication].
+// */
+//fun CreationExtras.EbsApplication(): EbsApplication =
+//    (this[AndroidViewModelFactory.APPLICATION_KEY] as EbsApplication)

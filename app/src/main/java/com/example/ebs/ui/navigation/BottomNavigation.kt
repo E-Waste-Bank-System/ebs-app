@@ -1,48 +1,42 @@
 package com.example.ebs.ui.navigation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.example.ebs.ui.navigation.destinations.NavigationDestination
-import com.example.ebs.utils.extractRouteName
+import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.ExperimentalHazeApi
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 
+@OptIn(ExperimentalHazeMaterialsApi::class, ExperimentalHazeApi::class)
 @Composable
-fun BottomNavigationItem(
-    navItem: NavigationDestination<out Any>,
-    selected: Boolean = false,
-    navController: NavController
+fun BottomNavigation(
+    hazeState: HazeState,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
 ){
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Companion.CenterHorizontally,
-        modifier = Modifier
-            .clickable {
-                val currentRoute = navController.currentDestination?.route
-                if (extractRouteName(currentRoute) != extractRouteName(navItem.route)) {
-                    navController.navigate(navItem.route) {
-                        popUpTo(
-                            navController.graph.findStartDestination().id
-                        ) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+    Row(
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.Companion.CenterVertically,
+        modifier = modifier
+            .hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.thin(MaterialTheme.colorScheme.surface).copy(
+                    blurRadius = 10.dp
+                )
+            ) {
+                blurEnabled = true
             }
+            .fillMaxWidth()
+            .padding(20.dp)
     ) {
-        Icon(
-            painterResource(navItem.icon!!),
-            contentDescription = navItem.name,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(navItem.name)
+        content()
     }
 }
