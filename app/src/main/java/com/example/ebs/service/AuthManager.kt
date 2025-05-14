@@ -3,16 +3,13 @@ package com.example.ebs.service
 import android.content.Context
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
-import com.example.ebs.ui.theme.provider
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
-import io.github.jan.supabase.createSupabaseClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.security.MessageDigest
@@ -22,7 +19,7 @@ import javax.inject.Inject
 class AuthManager @Inject constructor(
     private val supabase: SupabaseClient
 ) {
-    fun sighUpWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
+    fun signUpWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
         try{
             supabase.auth.signUpWith(Email){
                 email = emailValue
@@ -34,7 +31,7 @@ class AuthManager @Inject constructor(
         }
     }
 
-    fun sighInWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
+    fun signInWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
         try{
             supabase.auth.signInWith(Email){
                 email = emailValue
@@ -44,6 +41,10 @@ class AuthManager @Inject constructor(
         } catch(e: Exception){
             emit(AuthResponse.Error(e.localizedMessage))
         }
+    }
+
+    fun getUserId(): String? {
+        return supabase.auth.currentUserOrNull()?.id
     }
 
     private var googleIdTokenCredential: GoogleIdTokenCredential? = null

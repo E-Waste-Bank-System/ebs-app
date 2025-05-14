@@ -22,54 +22,54 @@ class DetectionListViewModel @Inject constructor(
     private val dataTestRepository: DataTestRepository
 ) : ViewModel() {
     val hazeState = HazeState()
-    private val _detectionListUiState = MutableStateFlow<DetectionListUiState>(DetectionListUiState.Loading)
-    val detectionListUiState: StateFlow<DetectionListUiState> = _detectionListUiState
+//    private val _detectionListUiState = MutableStateFlow<DetectionListUiState>(DetectionListUiState.Loading)
+//    val detectionListUiState: StateFlow<DetectionListUiState> = _detectionListUiState
 
     init {
 //        getData()
     }
-
-    fun getData() {
-        viewModelScope.launch {
-            _detectionListUiState.value = DetectionListUiState.Loading
-            try {
-                val dataFlow = dataTestRepository.getData()
-                    .stateIn(
-                        scope = viewModelScope,
-                        started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                        initialValue = DataTest(
-                            status = "---",
-                            data = BookData(
-                                book = Book(
-                                    id = "",
-                                    name = "",
-                                    year = 0,
-                                    author = "",
-                                    summary = "",
-                                    publisher = "",
-                                    pageCount = 0,
-                                    readPage = 0,
-                                    finished = false,
-                                    reading = false,
-                                    insertedAt = "",
-                                    updatedAt = ""
-                                )
-                            )
-                        )
-                    ).collect { data ->
-                        _detectionListUiState.value = DetectionListUiState.Success(data)
-                    }
-            } catch (e: IOException) {
-                _detectionListUiState.value = DetectionListUiState.Error(e)
-            } catch (e: HttpException) {
-                _detectionListUiState.value = DetectionListUiState.Error(e)
-            }
-        }
-    }
-
-    companion object {
-        private const val TIMEOUT_MILLIS = 5_000L
-    }
+//
+//    fun getData() {
+//        viewModelScope.launch {
+//            _detectionListUiState.value = DetectionListUiState.Loading
+//            try {
+//                val dataFlow = dataTestRepository.getData()
+//                    .stateIn(
+//                        scope = viewModelScope,
+//                        started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+//                        initialValue = DataTest(
+//                            status = "---",
+//                            data = BookData(
+//                                book = Book(
+//                                    id = "",
+//                                    name = "",
+//                                    year = 0,
+//                                    author = "",
+//                                    summary = "",
+//                                    publisher = "",
+//                                    pageCount = 0,
+//                                    readPage = 0,
+//                                    finished = false,
+//                                    reading = false,
+//                                    insertedAt = "",
+//                                    updatedAt = ""
+//                                )
+//                            )
+//                        )
+//                    ).collect { data ->
+//                        _detectionListUiState.value = DetectionListUiState.Success(data)
+//                    }
+//            } catch (e: IOException) {
+//                _detectionListUiState.value = DetectionListUiState.Error(e)
+//            } catch (e: HttpException) {
+//                _detectionListUiState.value = DetectionListUiState.Error(e)
+//            }
+//        }
+//    }
+//
+//    companion object {
+//        private const val TIMEOUT_MILLIS = 5_000L
+//    }
 
 //    /**
 //     * Factory for [MarsViewModel] that takes [MarsPhotosRepository] as a dependency

@@ -52,6 +52,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,8 +62,11 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ebs.R
+import com.example.ebs.ui.face.components.shapes.TopBarPage
 import com.example.ebs.ui.face.components.structures.CenterRow
+import com.example.ebs.ui.face.dialogue.ReqCam
 import com.example.ebs.ui.navigation.NavigationHandler
+import com.example.ebs.ui.navigation.destinations.Route
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -79,6 +85,7 @@ fun ScanScreen(
     if (cameraPermissionState.status.isGranted) {
         CameraPreviewContent(viewModel,navHandler)
     } else {
+        CameraPermissionRequester(navHandler){}
 //        CenterColumn(
 //            modifier = modifier.fillMaxSize().wrapContentSize().widthIn(max = 480.dp)
 //        ) {
@@ -101,7 +108,6 @@ fun ScanScreen(
 //                Text("Unleash the Camera!")
 //            }
 //        }
-        CameraPermissionRequester {  }
     }
 }
 
@@ -120,52 +126,49 @@ private fun CameraPreviewContent(
 
     surfaceRequest?.let { request ->
         Box {
-            CameraXViewfinder(
-                surfaceRequest = request,
-                modifier = modifier
-            )
-            Box(
-                modifier = Modifier
-                    .align(TopCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
-                    .background(Color.Black.copy(alpha = 0.5f))
-            ){}
-            Box(
-                modifier = Modifier
-                    .align(BottomCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
-                    .background(Color.Black.copy(alpha = 0.5f))
-            ){}
-            Box(
-                modifier = Modifier
-                    .align(CenterEnd)
-                    .fillMaxWidth(0.1f)
-                    .fillMaxHeight(0.4f)
-                    .background(Color.Black.copy(alpha = 0.5f))
-            ){}
-            Box(
-                modifier = Modifier
-                    .align(CenterStart)
-                    .fillMaxWidth(0.1f)
-                    .fillMaxHeight(0.4f)
-                    .background(Color.Black.copy(alpha = 0.5f))
-            ){}
-            // Top-left back icon
-            IconButton(
-                onClick = { navHandler.back() },
-                modifier = Modifier
-                    .align(TopStart)
-                    .padding(16.dp)
+            TopBarPage(buildAnnotatedString {
+                withStyle(SpanStyle(color = Color.White)) {
+                    append("Pindai")
+                }
+            },navHandler,
+                noPad = true,
+                customBack = Color.Black.copy(alpha = 0f),
+                mod = true
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.chevron_left),
-                    contentDescription = "Back",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(300.dp)
-                )
+                Box {
+                    CameraXViewfinder(
+                        surfaceRequest = request,
+                        modifier = modifier
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(TopCenter)
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.3f)
+                            .background(Color.Black.copy(alpha = 0.5f))
+                    ) {}
+                    Box(
+                        modifier = Modifier
+                            .align(BottomCenter)
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.3f)
+                            .background(Color.Black.copy(alpha = 0.5f))
+                    ) {}
+                    Box(
+                        modifier = Modifier
+                            .align(CenterEnd)
+                            .fillMaxWidth(0.1f)
+                            .fillMaxHeight(0.4f)
+                            .background(Color.Black.copy(alpha = 0.5f))
+                    ) {}
+                    Box(
+                        modifier = Modifier
+                            .align(CenterStart)
+                            .fillMaxWidth(0.1f)
+                            .fillMaxHeight(0.4f)
+                            .background(Color.Black.copy(alpha = 0.5f))
+                    ) {}
+                }
             }
             // Dock with capture button at the bottom
             CenterRow(
@@ -208,10 +211,10 @@ private fun CameraPreviewContent(
                     }
                     Spacer(modifier = Modifier.weight(0.2f))
                 }
-                CenterRow (
+                CenterRow(
                     modifier = Modifier
                         .weight(1f)
-                ){
+                ) {
                     CenterRow(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
@@ -251,7 +254,7 @@ private fun CameraPreviewContent(
 }
 
 @Composable
-fun CameraPermissionRequester(onPermissionGranted: () -> Unit) {
+fun CameraPermissionRequester(navHandler: NavigationHandler, onPermissionGranted: () -> Unit) {
     val context = LocalContext.current
     val cameraPermission = Manifest.permission.CAMERA
     val showDialog = remember { mutableStateOf(false) }
@@ -274,25 +277,22 @@ fun CameraPermissionRequester(onPermissionGranted: () -> Unit) {
     }
 
     if (showDialog.value) {
-        AlertDialog(
-            onDismissRequest = { showDialog.value = false },
-            title = { Text("Butuh Akses Kamera") },
-            text = { Text("Tolong izinkan akses kamera untuk menggunakan fungsi ini :)") },
-            confirmButton = {
-                Button(
-                    onClick = {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            ReqCam(
+                rightAct = {
                     showDialog.value = false
                     permissionLauncher.launch(cameraPermission)
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDialog.value = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
+                },
+                leftAct = {
+                    showDialog.value = false
+                },
+            )
+        }
     }
 }
 

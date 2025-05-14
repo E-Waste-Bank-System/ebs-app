@@ -21,54 +21,54 @@ import javax.inject.Inject
 class WasteDetailViewModel @Inject constructor(
     private val dataTestRepository: DataTestRepository
 ) : ViewModel() {
-    private val _detectionListUiState = MutableStateFlow<WasteDetailUiState>(WasteDetailUiState.Loading)
-    val detectionListUiState: StateFlow<WasteDetailUiState> = _detectionListUiState
-
-    init {
-//        getData()
-    }
-
-    fun getData() {
-        viewModelScope.launch {
-            _detectionListUiState.value = WasteDetailUiState.Loading
-            try {
-                val dataFlow = dataTestRepository.getData()
-                    .stateIn(
-                        scope = viewModelScope,
-                        started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                        initialValue = DataTest(
-                            status = "---",
-                            data = BookData(
-                                book = Book(
-                                    id = "",
-                                    name = "",
-                                    year = 0,
-                                    author = "",
-                                    summary = "",
-                                    publisher = "",
-                                    pageCount = 0,
-                                    readPage = 0,
-                                    finished = false,
-                                    reading = false,
-                                    insertedAt = "",
-                                    updatedAt = ""
-                                )
-                            )
-                        )
-                    ).collect { data ->
-                        _detectionListUiState.value = WasteDetailUiState.Success(data)
-                    }
-            } catch (e: IOException) {
-                _detectionListUiState.value = WasteDetailUiState.Error(e)
-            } catch (e: HttpException) {
-                _detectionListUiState.value = WasteDetailUiState.Error(e)
-            }
-        }
-    }
-
-    companion object {
-        private const val TIMEOUT_MILLIS = 5_000L
-    }
+//    private val _detectionListUiState = MutableStateFlow<WasteDetailUiState>(WasteDetailUiState.Loading)
+//    val detectionListUiState: StateFlow<WasteDetailUiState> = _detectionListUiState
+//
+//    init {
+////        getData()
+//    }
+//
+//    fun getData() {
+//        viewModelScope.launch {
+//            _detectionListUiState.value = WasteDetailUiState.Loading
+//            try {
+//                val dataFlow = dataTestRepository.getData()
+//                    .stateIn(
+//                        scope = viewModelScope,
+//                        started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+//                        initialValue = DataTest(
+//                            status = "---",
+//                            data = BookData(
+//                                book = Book(
+//                                    id = "",
+//                                    name = "",
+//                                    year = 0,
+//                                    author = "",
+//                                    summary = "",
+//                                    publisher = "",
+//                                    pageCount = 0,
+//                                    readPage = 0,
+//                                    finished = false,
+//                                    reading = false,
+//                                    insertedAt = "",
+//                                    updatedAt = ""
+//                                )
+//                            )
+//                        )
+//                    ).collect { data ->
+//                        _detectionListUiState.value = WasteDetailUiState.Success(data)
+//                    }
+//            } catch (e: IOException) {
+//                _detectionListUiState.value = WasteDetailUiState.Error(e)
+//            } catch (e: HttpException) {
+//                _detectionListUiState.value = WasteDetailUiState.Error(e)
+//            }
+//        }
+//    }
+//
+//    companion object {
+//        private const val TIMEOUT_MILLIS = 5_000L
+//    }
 
 //    /**
 //     * Factory for [MarsViewModel] that takes [MarsPhotosRepository] as a dependency

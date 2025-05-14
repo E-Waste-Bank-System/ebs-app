@@ -12,7 +12,7 @@ sealed class Route {
     @Serializable
     object Notifikasi
     @Serializable
-    object Detail
+    data class Detail(val query: String? = null, val barang: String)
     @Serializable
     object Dashboard
     @Serializable

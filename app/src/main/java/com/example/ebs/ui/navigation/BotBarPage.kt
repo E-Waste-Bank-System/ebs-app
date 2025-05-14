@@ -1,7 +1,6 @@
 package com.example.ebs.ui.navigation
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
@@ -14,7 +13,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.ebs.ui.face.components.structures.CenterColumn
-import com.example.ebs.ui.navigation.destinations.NavigationDestinationList
+import com.example.ebs.ui.navigation.destinations.MainNavbar
 import com.example.ebs.utils.extractRouteName
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
@@ -36,18 +35,16 @@ fun BotBarPage(
                 ) {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
-                    NavigationDestinationList.forEach { navItem ->
-                        if (navItem.icon != null) {
-                            BottomNavigationItem(
-                                navItem,
-                                selected = currentDestination
-                                    ?.hierarchy
-                                    ?.any {
-                                        extractRouteName(navItem.route) == extractRouteName(it.route)
-                                    } == true,
-                                navController = navController
-                            )
-                        }
+                    MainNavbar.forEach { navItem ->
+                        BottomNavigationItem(
+                            navItem,
+                            selected = currentDestination
+                                ?.hierarchy
+                                ?.any {
+                                    extractRouteName(navItem.route) == extractRouteName(it.route)
+                                } == true,
+                            navController = navController
+                        )
                     }
                 }
             }

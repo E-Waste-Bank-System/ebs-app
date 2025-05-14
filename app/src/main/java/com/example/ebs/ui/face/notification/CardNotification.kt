@@ -20,20 +20,20 @@ import com.example.ebs.ui.face.components.structures.CenterRow
 
 @Composable
 fun CardNotification(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.Companion,
     icon: Int = R.drawable.recycle,
     content: @Composable () -> Unit
 ){
     CenterRow(
-        vAli = Alignment.Top,
+        vAli = Alignment.Companion.Top,
         modifier = modifier
             .padding(vertical = 10.dp)
     ) {
         Box(
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Companion.Center
         ) {
             CenterRow(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
@@ -46,13 +46,13 @@ fun CardNotification(
             }
             if (true) {
                 CenterRow(
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .absoluteOffset(x = 13.dp, y = 25.dp)
                         .padding(bottom = 20.dp)
                         .size(6.dp)
                         .clip(CircleShape)
                         .background(
-                            Color.Green.copy(
+                            Color.Companion.Green.copy(
                                 green = 0.7f
                             )
                         )

@@ -21,10 +21,11 @@ fun MyNavigationg(
     Surface {
         NavHost(
             navController = navController,
-            startDestination = Route.Welcome,
+            startDestination = if(signedIn.value != null) Route.Welcome else (Route.Dashboard),
             modifier = modifier
         ) {
-            mainNav(navController, signedIn)
+            val navHandler = NavigationHandler(navController)
+            mainNav(navController, signedIn, navHandler)
         }
     }
 }

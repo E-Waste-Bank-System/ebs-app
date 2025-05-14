@@ -1,7 +1,9 @@
 package com.example.ebs.ui.navigation
 
+import android.util.Log
 import androidx.navigation.NavController
 import com.example.ebs.ui.navigation.destinations.Route
+import com.example.ebs.utils.extractRouteName
 
 class NavigationHandler(private val navController: NavController) {
     private fun navigateWithPopUpTo(
@@ -21,9 +23,7 @@ class NavigationHandler(private val navController: NavController) {
             this.restoreState = restoreState
         }
     }
-    private fun justNavigate(
-        route: Any
-    ) {
+    private fun justNavigate(route: Any) {
         navController.navigate(route)
     }
     fun back() {
@@ -40,7 +40,10 @@ class NavigationHandler(private val navController: NavController) {
     val signUpFromSignIn: () -> Unit = { navigateWithPopUpTo(Route.SignUp, Route.SignIn) }
     val menuFromSignIn: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignIn) }
     val menuFromSignUp: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignUp) }
-    val notifikasiFromMenu: () -> Unit = { navigateWithPopUpTo(Route.Notifikasi, Route.Dashboard) }
+    fun detailFromMenu (barang: String) {
+        justNavigate(Route.Detail(barang = barang))
+    }
+    val notifikasiFromMenu: () -> Unit = { justNavigate(Route.Notifikasi) }
     val dialogueSetting: () -> Unit = { justNavigate(Route.Settings) }
     val exitDialogue: () -> Unit = { justNavigate(Route.Exit) }
 }

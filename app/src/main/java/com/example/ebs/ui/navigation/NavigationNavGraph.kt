@@ -1,6 +1,7 @@
 package com.example.ebs.ui.navigation
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.navigation.NavController
@@ -12,6 +13,7 @@ import com.example.ebs.ui.face.scan.ScanScreen
 import com.example.ebs.ui.face.detail.WasteDetailScreen
 import com.example.ebs.ui.face.dialogue.ApplyRequest
 import com.example.ebs.ui.face.dialogue.Exit
+import com.example.ebs.ui.face.dialogue.ReqCam
 import com.example.ebs.ui.face.history.DetectionListScreen
 import com.example.ebs.ui.face.notification.NotifikasiScreen
 import com.example.ebs.ui.face.profile.ProfileScreen
@@ -23,20 +25,21 @@ import com.example.ebs.ui.navigation.destinations.Route
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun NavGraphBuilder.mainNav(
     navController: NavController,
-    signedIn: MutableState<String?>
+    signedIn: MutableState<String?>,
+    navHandler: NavigationHandler
 ){
-    val navHandler = NavigationHandler(navController)
     composable<Route.Welcome>{
         WelcomeScreen(navHandler)
     }
     composable<Route.SignUp> {
-        SignUpScreen(navHandler)
+        SignUpScreen(navHandler,signedIn)
     }
     composable<Route.SignIn> {
         SignInScreen(navHandler,signedIn)
     }
-    composable<Route.Detail> {
-        WasteDetailScreen(navHandler)
+    composable<Route.Detail> { backStackEntry ->
+        val barang = backStackEntry.arguments?.getString("barang")
+        WasteDetailScreen(navHandler,barang.toString())
     }
     composable<Route.Notifikasi> {
         NotifikasiScreen(navHandler)
@@ -57,6 +60,6 @@ fun NavGraphBuilder.mainNav(
         ApplyRequest()
     }
     dialog<Route.Exit> {
-        Exit(signedIn,navHandler)
+        Exit(navHandler)
     }
 }

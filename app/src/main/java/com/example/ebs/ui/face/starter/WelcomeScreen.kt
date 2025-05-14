@@ -53,10 +53,16 @@ fun WelcomeScreen(
                 .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth(0.90f)
                 .fillMaxHeight(0.45f)
-                .background(color = MaterialTheme.colorScheme.primary)
+
         ) {
             Image(
-                painter = painterResource(id = R.drawable.e_waste_illustration),
+                painter = painterResource(R.drawable.backgron),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize()
+            )
+            Image(
+                painter = painterResource(id = R.drawable.logos),
                 contentDescription = "E-Waste Illustration",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(216.dp)

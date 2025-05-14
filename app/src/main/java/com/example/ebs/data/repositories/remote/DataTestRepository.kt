@@ -8,4 +8,5 @@ import kotlinx.coroutines.flow.Flow
 interface DataTestRepository {
     /** Retrieves list of amphibians from underlying data source */
     suspend fun getData(): Flow<DataTest>
+    suspend fun uploadImage(filePath: String, token: String): Detections
 }

@@ -1,8 +1,10 @@
 package com.example.ebs.ui.face.components.inputs
 
+import android.R.attr.onClick
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,7 +27,7 @@ import com.example.ebs.ui.face.components.texts.TextTitleS
 
 @Composable
 fun AestheticButton(
-    text: String,
+    content: @Composable BoxScope.() -> Unit = {},
     onClick: () -> Unit
 ){
     Card(
@@ -38,7 +40,7 @@ fun AestheticButton(
             )
     ) {
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .background(
                     getGredienButton(
@@ -47,17 +49,7 @@ fun AestheticButton(
                     )
                 )
         ) {
-            TextTitleS(
-                buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color.White)) {
-                        append(text)
-                    }
-                },
-                modifier = Modifier.Companion
-                    .padding(16.dp)
-                    .align(Alignment.Companion.Center),
-                mod = true
-            )
+            content()
         }
     }
 }

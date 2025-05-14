@@ -13,12 +13,12 @@ import com.example.ebs.ui.face.components.structures.CenterRow
 
 @Composable
 fun CardNotifikasi2(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.Companion,
     content: @Composable () -> Unit,
 ){
     Card(
         shape = RoundedCornerShape(10.dp),
-        modifier = Modifier
+        modifier = Modifier.Companion
             .padding(5.dp)
     ) {
         CenterRow(

@@ -26,6 +26,7 @@ import com.example.ebs.ui.face.components.texts.TextContentS
 import com.example.ebs.ui.face.components.texts.TextTitleS
 import com.example.ebs.ui.face.components.shapes.TopBarPage
 import com.example.ebs.ui.navigation.NavigationHandler
+import com.example.ebs.ui.face.notification.CardNotification
 
 @Composable
 fun NotifikasiScreen(
@@ -33,7 +34,7 @@ fun NotifikasiScreen(
     modifier: Modifier = Modifier,
     viewModel: NotifikasiViewModel = hiltViewModel()
 ) {
-    TopBarPage("Notifikasi") {
+    TopBarPage("Notifikasi",navHandler) {
         LazyColumn {
             items(1) {
                 CenterRow(

@@ -24,6 +24,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +54,8 @@ fun SignInScreen(
     signedIn: MutableState<String?>,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val exitDialogue = remember { mutableStateOf(false) }
 
     BackHandler { exitDialogue.value = true }
@@ -82,16 +85,48 @@ fun SignInScreen(
 
         Spacer(modifier = Modifier.height(64.dp))
 
-        InputSpace(stringResource(R.string.username))
-        InputSpace(stringResource(R.string.password))
+        val email = remember { mutableStateOf("") }
+        val password = remember { mutableStateOf("") }
+        val waitEmail = remember { mutableStateOf(false) }
+
+        InputSpace(stringResource(R.string.email),email)
+        InputSpace(stringResource(R.string.password),password)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         AestheticButton(
-            text = stringResource(R.string.login),
+            content = {
+                if (waitEmail.value == false) {
+                    TextTitleS(
+                        buildAnnotatedString {
+                            withStyle(SpanStyle(color = Color.White)) {
+                                append("Login")
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Center),
+                        mod = true
+                    )
+                } else {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            },
             onClick = {
-                signedIn.value = "true"
-                navHandler.menuFromSignIn()
+                waitEmail.value = true
+                coroutineScope.launch {
+                    viewModel.authManagerState.signInWithEmail(email.value, password.value)
+                        .collect { result ->
+                            waitEmail.value = false
+                            if(result is AuthResponse.Success) {
+                                signedIn.value = viewModel.authManagerState.getUserId()
+                                Log.e("UserId","${signedIn.value}")
+                                navHandler.menuFromSignIn()
+                            } else {
+                                Log.d("AuthManager", result.toString())
+                            }
+                        }
+                }
             }
         )
 
@@ -123,8 +158,6 @@ fun SignInScreen(
             }
         }
 
-        val context = LocalContext.current
-        val coroutineScope = rememberCoroutineScope()
         val wait: MutableState<Boolean> = remember {
             mutableStateOf(false)
         }
@@ -134,9 +167,7 @@ fun SignInScreen(
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.5f))
             ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary
-                )
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
 
@@ -152,8 +183,9 @@ fun SignInScreen(
                         viewModel.authManagerState.loginGoogleUser(context)
                             .collect { result ->
                                 wait.value = false
-                                if(result is AuthResponse.Success) {
-                                    signedIn.value = viewModel.authManagerState.getGoogleProfilePictureUrl()
+                                if (result is AuthResponse.Success) {
+                                    signedIn.value =
+                                        viewModel.authManagerState.getGoogleProfilePictureUrl()
                                     navHandler.menuFromSignIn()
                                 } else {
                                     Log.d("AuthManager", result.toString())
