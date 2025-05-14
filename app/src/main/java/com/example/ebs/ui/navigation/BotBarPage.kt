@@ -1,6 +1,7 @@
-package com.example.ebs.ui.face.components.shapes
+package com.example.ebs.ui.navigation
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
@@ -13,9 +14,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.ebs.ui.face.components.structures.CenterColumn
-import com.example.ebs.ui.navigation.BottomNavigation
-import com.example.ebs.ui.navigation.BottomNavigationItem
 import com.example.ebs.ui.navigation.destinations.NavigationDestinationList
+import com.example.ebs.utils.extractRouteName
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
@@ -43,7 +43,7 @@ fun BotBarPage(
                                 selected = currentDestination
                                     ?.hierarchy
                                     ?.any {
-                                        navItem.route == it.route
+                                        extractRouteName(navItem.route) == extractRouteName(it.route)
                                     } == true,
                                 navController = navController
                             )

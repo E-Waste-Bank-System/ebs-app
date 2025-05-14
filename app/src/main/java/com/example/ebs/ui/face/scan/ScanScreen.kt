@@ -4,17 +4,32 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.compose.CameraXViewfinder
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,65 +37,78 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.BottomCenter
+import androidx.compose.ui.Alignment.Companion.BottomEnd
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterStart
+import androidx.compose.ui.Alignment.Companion.TopCenter
+import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.ebs.ui.face.components.structures.CenterColumn
+import com.example.ebs.R
+import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.navigation.NavigationHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun ScanScreen(
-    navController: NavController,
     signedIn: MutableState<String?>,
     navHandler: NavigationHandler,
     modifier: Modifier = Modifier,
     viewModel: ScanScreenViewModel = hiltViewModel()
 ){
-    val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+
     if (cameraPermissionState.status.isGranted) {
-        CameraPreviewContent(viewModel,modifier)
+        CameraPreviewContent(viewModel,navHandler)
     } else {
-        CenterColumn(
-            modifier = modifier.fillMaxSize().wrapContentSize().widthIn(max = 480.dp)
-        ) {
-            val textToShow = if (cameraPermissionState.status.shouldShowRationale) {
-                // If the user has denied the permission but the rationale can be shown,
-                // then gently explain why the app requires this permission
-                "Whoops! Looks like we need your camera to work our magic!" +
-                        "Don't worry, we just wanna see your pretty face (and maybe some cats).  " +
-                        "Grant us permission and let's get this party started!"
-            } else {
-                // If it's the first time the user lands on this feature, or the user
-                // doesn't want to be asked again for this permission, explain that the
-                // permission is required
-                "Hi there! We need your camera to work our magic! ✨\n" +
-                        "Grant us permission and let's get this party started! \uD83C\uDF89"
-            }
-            Text(textToShow, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
-                Text("Unleash the Camera!")
-            }
-        }
+//        CenterColumn(
+//            modifier = modifier.fillMaxSize().wrapContentSize().widthIn(max = 480.dp)
+//        ) {
+//            val textToShow = if (cameraPermissionState.status.shouldShowRationale) {
+//                // If the user has denied the permission but the rationale can be shown,
+//                // then gently explain why the app requires this permission
+//                "Whoops! Looks like we need your camera to work our magic!" +
+//                        "Don't worry, we just wanna see your pretty face (and maybe some cats).  " +
+//                        "Grant us permission and let's get this party started!"
+//            } else {
+//                // If it's the first time the user lands on this feature, or the user
+//                // doesn't want to be asked again for this permission, explain that the
+//                // permission is required
+//                "Hi there! We need your camera to work our magic! ✨\n" +
+//                        "Grant us permission and let's get this party started! \uD83C\uDF89"
+//            }
+//            Text(textToShow, textAlign = TextAlign.Center)
+//            Spacer(Modifier.height(16.dp))
+//            Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
+//                Text("Unleash the Camera!")
+//            }
+//        }
+        CameraPermissionRequester {  }
     }
 }
 
 @Composable
 private fun CameraPreviewContent(
     viewModel: ScanScreenViewModel,
+    navHandler: NavigationHandler,
     modifier: Modifier = Modifier,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
@@ -91,10 +119,134 @@ private fun CameraPreviewContent(
     }
 
     surfaceRequest?.let { request ->
-        CameraXViewfinder(
-            surfaceRequest = request,
-            modifier = modifier
-        )
+        Box {
+            CameraXViewfinder(
+                surfaceRequest = request,
+                modifier = modifier
+            )
+            Box(
+                modifier = Modifier
+                    .align(TopCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.3f)
+                    .background(Color.Black.copy(alpha = 0.5f))
+            ){}
+            Box(
+                modifier = Modifier
+                    .align(BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.3f)
+                    .background(Color.Black.copy(alpha = 0.5f))
+            ){}
+            Box(
+                modifier = Modifier
+                    .align(CenterEnd)
+                    .fillMaxWidth(0.1f)
+                    .fillMaxHeight(0.4f)
+                    .background(Color.Black.copy(alpha = 0.5f))
+            ){}
+            Box(
+                modifier = Modifier
+                    .align(CenterStart)
+                    .fillMaxWidth(0.1f)
+                    .fillMaxHeight(0.4f)
+                    .background(Color.Black.copy(alpha = 0.5f))
+            ){}
+            // Top-left back icon
+            IconButton(
+                onClick = { navHandler.back() },
+                modifier = Modifier
+                    .align(TopStart)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.chevron_left),
+                    contentDescription = "Back",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(300.dp)
+                )
+            }
+            // Dock with capture button at the bottom
+            CenterRow(
+                modifier = Modifier
+                    .align(BottomCenter)
+                    .fillMaxWidth()
+                    .padding(vertical = 50.dp)
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                CenterRow(
+                    modifier = Modifier
+                        .weight(0.8f)
+                        .background(
+                            color = Color.Black.copy(alpha = 0.5f), // Opaque white with slight transparency
+                            shape = CircleShape
+                        )
+                ) {
+                    Spacer(modifier = Modifier.weight(0.2f))
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .padding(vertical = 10.dp)
+                            .background(
+                                color = Color.White,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Button(
+                            onClick = { /* TODO: Add capture logic */ },
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {}
+                    }
+                    Spacer(modifier = Modifier.weight(0.2f))
+                }
+                CenterRow (
+                    modifier = Modifier
+                        .weight(1f)
+                ){
+                    CenterRow(
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.5f), // Opaque white with slight transparency
+                                shape = CircleShape
+                            )
+                    ) {
+                        Spacer(modifier = Modifier.weight(0.1f))
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f)
+                                .padding(vertical = 10.dp)
+                                .background(
+                                    color = Color.White,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painterResource(R.drawable.nopicture),
+                                contentDescription = "Album",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .clickable { }
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(0.1f))
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -117,11 +269,7 @@ fun CameraPermissionRequester(onPermissionGranted: () -> Unit) {
         if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
             onPermissionGranted()
         } else {
-            if ((context as ComponentActivity).shouldShowRequestPermissionRationale(cameraPermission)) {
-                showDialog.value = true
-            } else {
-                permissionLauncher.launch(cameraPermission)
-            }
+            showDialog.value = true
         }
     }
 

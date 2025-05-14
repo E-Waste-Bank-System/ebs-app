@@ -1,5 +1,7 @@
 package com.example.ebs.ui.navigation
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,8 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.example.ebs.ui.face.components.texts.TextTitleS
 import com.example.ebs.ui.navigation.destinations.NavigationDestination
 import com.example.ebs.utils.extractRouteName
 
@@ -41,8 +47,13 @@ fun BottomNavigationItem(
         Icon(
             painterResource(navItem.icon!!),
             contentDescription = navItem.name,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Text(navItem.name)
+        TextTitleS( if (selected) buildAnnotatedString {
+            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                append(navItem.name)
+            }} else navItem.name,
+            mod = selected
+        )
     }
 }

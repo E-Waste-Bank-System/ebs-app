@@ -11,6 +11,7 @@ import com.example.ebs.ui.face.dashboard.DashboardScreen
 import com.example.ebs.ui.face.scan.ScanScreen
 import com.example.ebs.ui.face.detail.WasteDetailScreen
 import com.example.ebs.ui.face.dialogue.ApplyRequest
+import com.example.ebs.ui.face.dialogue.Exit
 import com.example.ebs.ui.face.history.DetectionListScreen
 import com.example.ebs.ui.face.notification.NotifikasiScreen
 import com.example.ebs.ui.face.profile.ProfileScreen
@@ -47,12 +48,15 @@ fun NavGraphBuilder.mainNav(
         DetectionListScreen(navController,signedIn,navHandler)
     }
     composable<Route.Scan> {
-        ScanScreen(navController,signedIn,navHandler)
+        ScanScreen(signedIn,navHandler)
     }
     composable<Route.Profile> {
         ProfileScreen(navController,signedIn,navHandler)
     }
     dialog<Route.Settings> {
         ApplyRequest()
+    }
+    dialog<Route.Exit> {
+        Exit(signedIn,navHandler)
     }
 }

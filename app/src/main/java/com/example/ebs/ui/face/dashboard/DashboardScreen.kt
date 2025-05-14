@@ -1,5 +1,6 @@
 package com.example.ebs.ui.face.dashboard
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
@@ -15,12 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.ui.face.components.gradients.getGredienBackground
-import com.example.ebs.ui.face.components.shapes.BotBarPage
+import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.navigation.NavigationHandler
 
@@ -33,6 +36,15 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     //    viewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val exitDialogue = remember { mutableStateOf(false) }
+
+    BackHandler { exitDialogue.value = true }
+
+    if (exitDialogue.value) {
+        navHandler.exitDialogue()
+        exitDialogue.value = false
+    }
+    
     BotBarPage(
         navController = navController,
         signedIn = signedIn,

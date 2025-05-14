@@ -2,15 +2,6 @@ package com.example.ebs.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Oranye = Color(0xFFD88233)
-val Hijau = Color(0xFF408643)
-val Merah = Color(0xFFFF4A4A)
-val HijauMudeHarusnya = Color(0xFF5DD261)
-val OranyeMudeHarusnya = Color(0xFFFF922C)
-val Whito = Color(0XFFF9F9F9)
-val Blackto = Color(0xFF232323)
-val BiruMudeBanget = Color(0xFFD2F4FF)
-
 val primaryLight = Color(0xFF69C0DC)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFFFFFFF)

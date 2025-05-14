@@ -11,7 +11,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TextTitleM(text: Any, modifier: Modifier = Modifier.Companion, mod: Boolean = false){
+fun TextTitleM(text: Any, modifier: Modifier = Modifier, mod: Boolean = false){
     val style = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onBackground,
         fontSize = 20.sp,

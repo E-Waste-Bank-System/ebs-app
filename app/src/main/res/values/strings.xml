@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">EBS</string>
+    <string name="Intro">Ada sesuatu yang tidak boleh</string>
+    <string name="Intro_n1">dilewatkan agar bisa eksplor lebih jauh</string>
+    <string name="Intro_n2">lagi pada aplikasi ini</string>
+    <string name="signInGoogle">Lanjutkan dengan Google</string>
+    <string name="belumPunyaAkun">"Belum punya akun? "</string>
+    <string name="daftar">Daftar</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="helloSignIn">Halo,</string>
+    <string name="temanSignIn">" Teman!"</string>
+    <string name="login">Login</string>
+    <string name="or">Or</string>
+    <string name="open">Cukup</string>
+    <string name="open_n1">" Pindai"</string>
+    <string name="open_n2">Kami Urus Sisanya!</string>
+    <string name="open_n3">Teknologi cerdas kami akan mendeteksi jenis</string>
+    <string name="open_n4">sampah elektronik Anda dan memberikan langkah</string>
+    <string name="open_n5">mudah untuk mengelolanya</string>
+    <string name="sign_up">Buat Akun!</string>
+    <string name="email">Email</string>
+    <string name="notel">No. Telepon</string>
+    <string name="sudahPunyaAkun">"Sudah punya akun? "</string>
 </resources>

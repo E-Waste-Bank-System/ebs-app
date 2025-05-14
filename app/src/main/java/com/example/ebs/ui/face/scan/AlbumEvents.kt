@@ -1,4 +1,4 @@
-package com.example.ebs.ui.cameraKatanya
+package com.example.ebs.ui.face.scan
 
 import android.content.Context
 import android.net.Uri

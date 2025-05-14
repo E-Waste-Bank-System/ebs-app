@@ -23,4 +23,6 @@ sealed class Route {
     object Profile
     @Serializable
     object Settings
+    @Serializable
+    object Exit
 }

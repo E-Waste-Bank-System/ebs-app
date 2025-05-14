@@ -28,7 +28,7 @@ class DashboardViewModel @Inject constructor(
     val hazeState = HazeState()
     val authManagerState: AuthManager
         get() = authManager
-    val databaseManagerState: DatabaseManager
+    private val databaseManagerState: DatabaseManager
         get() = databaseManager
 
     private val _isLoading = MutableStateFlow(false)

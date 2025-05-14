@@ -13,8 +13,8 @@ import com.example.ebs.BuildConfig
 import com.example.ebs.data.repositories.remote.DataTestRepository
 import com.example.ebs.service.AuthManager
 import com.example.ebs.service.DatabaseManager
-import com.example.ebs.ui.cameraKatanya.AlbumViewState
-import com.example.ebs.ui.cameraKatanya.Intent
+import com.example.ebs.ui.face.scan.AlbumViewState
+import com.example.ebs.ui.face.scan.Intent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.Dispatchers

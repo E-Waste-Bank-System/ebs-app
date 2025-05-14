@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -70,19 +71,19 @@ fun WelcomeScreen(
                 .fillMaxWidth()
         ){
             TextTitleM(buildAnnotatedString {
-                append("Cukup")
+                append(stringResource(R.string.open))
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    append(" Pindai")
+                    append(stringResource(R.string.open_n1))
                 }
                 append(",")
             }, mod = true)
-            TextTitleM("Kami Urus Sisanya!")
+            TextTitleM(stringResource(R.string.open_n2))
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextContentM("Teknologi cerdas kami akan mendeteksi jenis")
-            TextContentM("sampah elektronik Anda dan memberikan langkah")
-            TextContentM("mudah untuk mengelolanya")
+            TextContentM(stringResource(R.string.open_n3))
+            TextContentM(stringResource(R.string.open_n4))
+            TextContentM(stringResource(R.string.open_n5))
 
             Spacer(modifier = Modifier.height(48.dp))
 
@@ -103,7 +104,7 @@ fun WelcomeScreen(
                         .height(50.dp)
                         .width(140.dp)
                 ) {
-                    Text(text = "Login")
+                    Text(stringResource(R.string.login))
                 }
 
                 Button(
@@ -118,7 +119,7 @@ fun WelcomeScreen(
                         .height(50.dp)
                         .width(140.dp)
                 ) {
-                    Text(text = "Daftar")
+                    Text(stringResource(R.string.daftar))
                 }
             }
 

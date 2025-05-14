@@ -41,7 +41,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.ebs.R
 import com.example.ebs.service.WaterNotificationService
 import com.example.ebs.ui.face.components.gradients.getGredienButton
-import com.example.ebs.ui.face.components.shapes.BotBarPage
+import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.navigation.NavigationHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -66,6 +66,8 @@ fun ProfileScreen(
             postNotificationPermission.launchPermissionRequest()
         }
     }
+
+    waterNotificationService.showBasicNotification()
 
     BotBarPage(
         navController = navController,

@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
-fun TextContentL(text: Any, modifier: Modifier = Modifier.Companion, mod: Boolean = false) {
+fun TextContentL(text: Any, modifier: Modifier = Modifier, mod: Boolean = false) {
     val style = MaterialTheme.typography.bodySmall.copy(
         color = MaterialTheme.colorScheme.onBackground,
         fontWeight = FontWeight.Companion.Bold

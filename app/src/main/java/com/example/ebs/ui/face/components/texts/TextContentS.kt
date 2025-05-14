@@ -9,7 +9,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TextContentS(text: Any, modifier: Modifier = Modifier.Companion, mod: Boolean = false) {
+fun TextContentS(text: Any, modifier: Modifier = Modifier, mod: Boolean = false) {
     val style = MaterialTheme.typography.labelSmall.copy(
         color = MaterialTheme.colorScheme.onBackground,
         fontSize = 10.sp

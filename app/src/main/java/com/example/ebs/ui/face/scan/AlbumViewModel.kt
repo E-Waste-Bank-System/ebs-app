@@ -1,13 +1,12 @@
-package com.example.ebs.ui.cameraKatanya
+package com.example.ebs.ui.face.scan
 
-import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.FileProvider
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ebs.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,12 +15,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
-/**
- * This variant inherits from [AndroidViewModel] and has access to the application context
- */
-class AlbumAndroidViewModel(private val appContext: Application,
-                            private val coroutineContext: CoroutineContext
-): AndroidViewModel(appContext) {
+class AlbumViewModel(private val coroutineContext: CoroutineContext
+): ViewModel() {
+
     //region View State
     private val _albumViewState: MutableStateFlow<AlbumViewState> = MutableStateFlow(
         AlbumViewState()
@@ -30,20 +26,21 @@ class AlbumAndroidViewModel(private val appContext: Application,
         get() = _albumViewState
     //endregion
 
-    fun onEvent(intent: Intent) = viewModelScope.launch(coroutineContext) {
+    // region Intents
+    fun onReceive(intent: Intent) = viewModelScope.launch(coroutineContext) {
         when(intent) {
-            is Intent.OnPermissionGranted -> {
+            is Intent.OnPermissionGrantedWith -> {
                 // Create an empty image file in the app's cache directory
-                val file = File.createTempFile(
+                val tempFile = File.createTempFile(
                     "temp_image_file_", /* prefix */
                     ".jpg", /* suffix */
-                    appContext.cacheDir  /* cache directory */
+                    intent.compositionContext.cacheDir  /* cache directory */
                 )
 
                 // Create sandboxed url for this temp file - needed for the camera API
-                val uri = FileProvider.getUriForFile(appContext,
-                    "${BuildConfig.APPLICATION_ID}.provider",
-                    file
+                val uri = FileProvider.getUriForFile(intent.compositionContext,
+                    "${BuildConfig.APPLICATION_ID}.provider", /* needs to match the provider information in the manifest */
+                    tempFile
                 )
                 _albumViewState.value = _albumViewState.value.copy(tempFileUrl = uri)
             }
@@ -53,12 +50,12 @@ class AlbumAndroidViewModel(private val appContext: Application,
                 println("User did not grant permission to use the camera")
             }
 
-            is Intent.OnFinishPickingImages -> {
+            is Intent.OnFinishPickingImagesWith -> {
                 if (intent.imageUrls.isNotEmpty()) {
                     // Handle picked images
                     val newImages = mutableListOf<ImageBitmap>()
                     for (eachImageUrl in intent.imageUrls) {
-                        val inputStream = appContext.contentResolver.openInputStream(eachImageUrl)
+                        val inputStream = intent.compositionContext.contentResolver.openInputStream(eachImageUrl)
                         val bytes = inputStream?.readBytes()
                         inputStream?.close()
 
@@ -66,8 +63,7 @@ class AlbumAndroidViewModel(private val appContext: Application,
                             val bitmapOptions = BitmapFactory.Options()
                             bitmapOptions.inMutable = true
                             val bitmap: Bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bitmapOptions)
-                            val imageBitmap = bitmap.asImageBitmap()
-                            newImages.add(imageBitmap)
+                            newImages.add(bitmap.asImageBitmap())
                         } else {
                             // error reading the bytes from the image url
                             println("The image that was picked could not be read from the device at this url: $eachImageUrl")
@@ -85,10 +81,10 @@ class AlbumAndroidViewModel(private val appContext: Application,
                 }
             }
 
-            is Intent.OnImageSaved -> {
+            is Intent.OnImageSavedWith -> {
                 val tempImageUrl = _albumViewState.value.tempFileUrl
                 if (tempImageUrl != null) {
-                    val source: ImageDecoder.Source = ImageDecoder.createSource(appContext.contentResolver, tempImageUrl)
+                    val source = ImageDecoder.createSource(intent.compositionContext.contentResolver, tempImageUrl)
 
                     val currentPictures = _albumViewState.value.selectedPictures.toMutableList()
                     currentPictures.add(ImageDecoder.decodeBitmap(source).asImageBitmap())
@@ -102,17 +98,18 @@ class AlbumAndroidViewModel(private val appContext: Application,
                 _albumViewState.value = _albumViewState.value.copy(tempFileUrl = null)
             }
 
-            is Intent.OnFinishPickingImagesWith -> {
+            is Intent.OnPermissionGranted -> {
                 // unnecessary in this viewmodel variant
             }
 
-            is Intent.OnPermissionGrantedWith -> {
+            is Intent.OnFinishPickingImages -> {
                 // unnecessary in this viewmodel variant
             }
 
-            is Intent.OnImageSavedWith -> {
+            is Intent.OnImageSaved -> {
                 // unnecessary in this viewmodel variant
             }
         }
     }
+    // endregion
 }

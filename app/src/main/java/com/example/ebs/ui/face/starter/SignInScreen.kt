@@ -1,6 +1,7 @@
 package com.example.ebs.ui.face.starter
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,9 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,6 +43,7 @@ import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.face.components.texts.TextContentL
 import com.example.ebs.ui.face.components.texts.TextContentM
 import com.example.ebs.ui.face.components.texts.TextTitleL
+import com.example.ebs.ui.face.components.texts.TextTitleS
 import com.example.ebs.ui.navigation.NavigationHandler
 import kotlinx.coroutines.launch
 
@@ -51,6 +53,15 @@ fun SignInScreen(
     signedIn: MutableState<String?>,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
+    val exitDialogue = remember { mutableStateOf(false) }
+
+    BackHandler { exitDialogue.value = true }
+
+    if (exitDialogue.value) {
+        navHandler.exitDialogue()
+        exitDialogue.value = false
+    }
+
     CenterColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -58,26 +69,26 @@ fun SignInScreen(
     ) {
         TextTitleL(buildAnnotatedString {
             withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                append("Halo,")
+                append(stringResource(R.string.helloSignIn))
             }
-            append(" Teman!")
+            append(stringResource(R.string.temanSignIn))
         }, mod = true)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextContentL("Ada sesuatu yang tidak boleh")
-        TextContentL("dilewatkan agar bisa eksplor lebih jauh")
-        TextContentL("lagi pada aplikasi ini")
+        TextContentL(stringResource(R.string.Intro))
+        TextContentL(stringResource(R.string.Intro_n1))
+        TextContentL(stringResource(R.string.Intro_n2))
 
         Spacer(modifier = Modifier.height(64.dp))
 
-        InputSpace("Username")
-        InputSpace("Password")
+        InputSpace(stringResource(R.string.username))
+        InputSpace(stringResource(R.string.password))
 
         Spacer(modifier = Modifier.height(16.dp))
 
         AestheticButton(
-            text = "Login",
+            text = stringResource(R.string.login),
             onClick = {
                 signedIn.value = "true"
                 navHandler.menuFromSignIn()
@@ -98,7 +109,7 @@ fun SignInScreen(
                 HorizontalDivider(color = Color.Gray)
             }
             Text(
-                text = "Or",
+                text = stringResource(R.string.or),
                 color = Color.Gray,
                 modifier = Modifier
                     .padding(start = 5.dp, bottom = 5.dp, end = 5.dp)
@@ -156,10 +167,8 @@ fun SignInScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
             ){
-                Text(
-                    text = "Lanjutkan dengan Google",
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface,
+                TextTitleS(
+                    stringResource(R.string.signInGoogle),
                     modifier = Modifier
                         .padding(8.dp)
                 )
@@ -175,11 +184,11 @@ fun SignInScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         CenterRow {
-            TextContentM("Belum punya akun? ")
+            TextContentM(stringResource(R.string.belumPunyaAkun))
             TextContentM(
                 buildAnnotatedString {
                     withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                        append("Daftar")
+                        append(stringResource(R.string.daftar))
                     }
                 },
                 mod = true,

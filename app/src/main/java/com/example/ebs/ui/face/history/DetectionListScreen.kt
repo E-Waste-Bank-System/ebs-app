@@ -29,7 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.data.repositories.remote.DataTest
-import com.example.ebs.ui.face.components.shapes.BotBarPage
+import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.face.components.shapes.Indicator

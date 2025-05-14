@@ -26,6 +26,13 @@ class NavigationHandler(private val navController: NavController) {
     ) {
         navController.navigate(route)
     }
+    fun back() {
+        navController.popBackStack()
+    }
+    fun closeApp() {
+        val activity = navController.context as? android.app.Activity
+        activity?.finish()
+    }
     val welcomeFromMenu: () -> Unit = { navigateWithPopUpTo(Route.Welcome, Route.Dashboard) }
     val signInFromWelcome: () -> Unit = { navigateWithPopUpTo(Route.SignIn, Route.Welcome) }
     val signInFromSignUp: () -> Unit = { navigateWithPopUpTo(Route.SignIn, Route.SignUp) }
@@ -35,4 +42,5 @@ class NavigationHandler(private val navController: NavController) {
     val menuFromSignUp: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignUp) }
     val notifikasiFromMenu: () -> Unit = { navigateWithPopUpTo(Route.Notifikasi, Route.Dashboard) }
     val dialogueSetting: () -> Unit = { justNavigate(Route.Settings) }
+    val exitDialogue: () -> Unit = { justNavigate(Route.Exit) }
 }

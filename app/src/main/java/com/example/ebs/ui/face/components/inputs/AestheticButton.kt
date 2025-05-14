@@ -15,9 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.ebs.ui.face.components.gradients.getGredienButton
+import com.example.ebs.ui.face.components.texts.TextTitleS
 
 @Composable
 fun AestheticButton(
@@ -43,13 +47,16 @@ fun AestheticButton(
                     )
                 )
         ) {
-            Text(
-                text = text,
-                textAlign = TextAlign.Companion.Center,
-                color = Color.Companion.White,
+            TextTitleS(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = Color.White)) {
+                        append(text)
+                    }
+                },
                 modifier = Modifier.Companion
                     .padding(16.dp)
-                    .align(Alignment.Companion.Center)
+                    .align(Alignment.Companion.Center),
+                mod = true
             )
         }
     }
