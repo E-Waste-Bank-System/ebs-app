@@ -1,11 +1,9 @@
 package com.example.ebs.di
 
-import android.content.Context
-import com.example.ebs.service.AuthManager
+import com.example.ebs.service.auth.AuthManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.jan.supabase.SupabaseClient
 

@@ -14,11 +14,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.example.ebs.data.repositories.UserPreferencesRepository
-import com.example.ebs.service.AuthResponse
-import com.example.ebs.ui.face.AuthViewModel
+import com.example.ebs.ui.screens.AuthViewModel
 import com.example.ebs.ui.navigation.destinations.Route
 import kotlinx.coroutines.flow.firstOrNull
-import okhttp3.internal.wait
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable

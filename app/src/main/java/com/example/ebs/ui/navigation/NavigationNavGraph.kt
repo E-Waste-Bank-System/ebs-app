@@ -2,23 +2,22 @@ package com.example.ebs.ui.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.MutableState
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import com.example.ebs.data.repositories.UserPreferencesRepository
-import com.example.ebs.ui.face.dashboard.DashboardScreen
-import com.example.ebs.ui.face.scan.ScanScreen
-import com.example.ebs.ui.face.detail.WasteDetailScreen
-import com.example.ebs.ui.face.dialogue.ApplyRequest
-import com.example.ebs.ui.face.dialogue.Exit
-import com.example.ebs.ui.face.history.DetectionListScreen
-import com.example.ebs.ui.face.notification.NotifikasiScreen
-import com.example.ebs.ui.face.profile.ProfileScreen
-import com.example.ebs.ui.face.starter.SignInScreen
-import com.example.ebs.ui.face.starter.SignUpScreen
-import com.example.ebs.ui.face.starter.WelcomeScreen
+import com.example.ebs.ui.screens.dashboard.DashboardScreen
+import com.example.ebs.ui.screens.scan.ScanScreen
+import com.example.ebs.ui.screens.detail.WasteDetailScreen
+import com.example.ebs.ui.dialogues.ApplyRequest
+import com.example.ebs.ui.dialogues.Exit
+import com.example.ebs.ui.screens.history.DetectionListScreen
+import com.example.ebs.ui.screens.notification.NotifikasiScreen
+import com.example.ebs.ui.screens.profile.ProfileScreen
+import com.example.ebs.ui.screens.starter.SignInScreen
+import com.example.ebs.ui.screens.starter.SignUpScreen
+import com.example.ebs.ui.screens.starter.WelcomeScreen
 import com.example.ebs.ui.navigation.destinations.Route
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)

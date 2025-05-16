@@ -1,5 +1,6 @@
 package com.example.ebs.data.repositories.local
 
+import com.example.ebs.data.structure.local.localItems.Item
 import kotlinx.coroutines.flow.Flow
 
 /**

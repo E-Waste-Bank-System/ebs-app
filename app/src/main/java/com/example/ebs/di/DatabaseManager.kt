@@ -1,6 +1,6 @@
 package com.example.ebs.di
 
-import com.example.ebs.service.DatabaseManager
+import com.example.ebs.service.database.DatabaseManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

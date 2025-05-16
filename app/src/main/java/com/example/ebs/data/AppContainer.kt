@@ -1,12 +1,13 @@
 package com.example.ebs.data
 
 import android.content.Context
-import com.example.ebs.data.repositories.LocalItemsRepository
-import com.example.ebs.data.repositories.RemoteEBSRepository
+import com.example.ebs.BuildConfig
+import com.example.ebs.data.repositories.local.LocalItemsRepository
 import com.example.ebs.data.repositories.local.ItemsDatabase
 import com.example.ebs.data.repositories.local.ItemsRepository
-import com.example.ebs.data.repositories.remote.DataTestRepository
-import com.example.ebs.data.repositories.remote.EBSApiService
+import com.example.ebs.data.repositories.remote.book.BookRepositoryInf
+import com.example.ebs.data.repositories.remote.ebsApi.EBSApiService
+import com.example.ebs.data.repositories.remote.ebsApi.EBSRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -23,7 +24,7 @@ import javax.inject.Singleton
  */
 interface AppContainer {
     val itemsRepository: ItemsRepository
-    val dataTestRepository: DataTestRepository
+    val dataTestRepository: BookRepositoryInf
 }
 
 /**
@@ -32,7 +33,7 @@ interface AppContainer {
 @Module
 @InstallIn(SingletonComponent::class)
 object AppDataContainer {
-    val BASE_URL = "https://ebs-api-981332637673.asia-southeast2.run.app/"
+    val BASE_URL = BuildConfig.BASE_API_URL
 
     /**
      * Use the Retrofit builder to build a retrofit object using a kotlinx.serialization converter
@@ -60,8 +61,8 @@ object AppDataContainer {
      */
     @Provides
     @Singleton
-    fun provideDataTestRepository(ebsApiService: EBSApiService): DataTestRepository {
-        return RemoteEBSRepository(ebsApiService)
+    fun provideDataTestRepository(ebsApiService: EBSApiService): EBSRepository {
+        return EBSRepository(ebsApiService)
     }
 
     /**

@@ -5,14 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.ebs.ui.face.components.structures.CenterColumn
+import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.navigation.destinations.MainNavbar
 import com.example.ebs.utils.extractRouteName
 import dev.chrisbanes.haze.HazeState

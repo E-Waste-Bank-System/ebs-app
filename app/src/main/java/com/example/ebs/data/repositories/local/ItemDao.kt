@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.ebs.data.structure.local.localItems.Item
 import kotlinx.coroutines.flow.Flow
 
 @Dao
