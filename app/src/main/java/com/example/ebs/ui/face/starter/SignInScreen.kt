@@ -20,6 +20,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,8 +36,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.ebs.R
+import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.service.AuthResponse
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.inputs.AestheticButton
 import com.example.ebs.ui.face.components.inputs.InputSpace
 import com.example.ebs.ui.face.components.structures.CenterColumn
@@ -46,187 +50,203 @@ import com.example.ebs.ui.face.components.texts.TextContentM
 import com.example.ebs.ui.face.components.texts.TextTitleL
 import com.example.ebs.ui.face.components.texts.TextTitleS
 import com.example.ebs.ui.navigation.NavigationHandler
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 @Composable
 fun SignInScreen(
-    navHandler: NavigationHandler,
-    signedIn: MutableState<String?>,
-    viewModel: SignInViewModel = hiltViewModel()
+    navController: NavController,
+    userPref: UserPreferencesRepository,
+    viewModelAuth: AuthViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val exitDialogue = remember { mutableStateOf(false) }
+    viewModelAuth.initializeNavHandler(navController)
+    val checkIn = remember { mutableStateOf(false) }
 
-    BackHandler { exitDialogue.value = true }
-
-    if (exitDialogue.value) {
-        navHandler.exitDialogue()
-        exitDialogue.value = false
+    LaunchedEffect(Unit) {
+        val token = userPref.authToken.firstOrNull()
+        viewModelAuth.updateLocalCred(token ?: "")
+        Log.e("TAG", "OneHalfCredCheck: ${viewModelAuth.localCred.take(10)}")
+        checkIn.value = true
     }
 
-    CenterColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-    ) {
-        TextTitleL(buildAnnotatedString {
-            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                append(stringResource(R.string.helloSignIn))
-            }
-            append(stringResource(R.string.temanSignIn))
-        }, mod = true)
+    Log.d("Route", "This is SignInScreen")
+    if(checkIn.value) {
+        val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
+        val exitDialogue = remember { mutableStateOf(false) }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        BackHandler { exitDialogue.value = true }
 
-        TextContentL(stringResource(R.string.Intro))
-        TextContentL(stringResource(R.string.Intro_n1))
-        TextContentL(stringResource(R.string.Intro_n2))
-
-        Spacer(modifier = Modifier.height(64.dp))
-
-        val email = remember { mutableStateOf("") }
-        val password = remember { mutableStateOf("") }
-        val waitEmail = remember { mutableStateOf(false) }
-
-        InputSpace(stringResource(R.string.email),email)
-        InputSpace(stringResource(R.string.password),password)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AestheticButton(
-            content = {
-                if (waitEmail.value == false) {
-                    TextTitleS(
-                        buildAnnotatedString {
-                            withStyle(SpanStyle(color = Color.White)) {
-                                append("Login")
-                            }
-                        },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .align(Center),
-                        mod = true
-                    )
-                } else {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
-            },
-            onClick = {
-                waitEmail.value = true
-                coroutineScope.launch {
-                    viewModel.authManagerState.signInWithEmail(email.value, password.value)
-                        .collect { result ->
-                            waitEmail.value = false
-                            if(result is AuthResponse.Success) {
-                                signedIn.value = viewModel.authManagerState.getUserId()
-                                Log.e("UserId","${signedIn.value}")
-                                navHandler.menuFromSignIn()
-                            } else {
-                                Log.d("AuthManager", result.toString())
-                            }
-                        }
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        CenterRow(
+        if (exitDialogue.value) {
+            viewModelAuth.navHandler.exitDialogue()
+            exitDialogue.value = false
+        }
+        CenterColumn(
             modifier = Modifier
-                .height(50.dp)
-        ){
-            CenterColumn(
-                modifier = Modifier
-                    .width(100.dp)
-                    .fillMaxHeight()
-            ) {
-                HorizontalDivider(color = Color.Gray)
-            }
-            Text(
-                text = stringResource(R.string.or),
-                color = Color.Gray,
-                modifier = Modifier
-                    .padding(start = 5.dp, bottom = 5.dp, end = 5.dp)
-            )
-            CenterColumn(
-                modifier = Modifier
-                    .width(100.dp)
-                    .fillMaxHeight()
-            ) {
-                HorizontalDivider(color = Color.Gray)
-            }
-        }
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
+        ) {
+            TextTitleL(buildAnnotatedString {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    append(stringResource(R.string.helloSignIn))
+                }
+                append(stringResource(R.string.temanSignIn))
+            }, mod = true)
 
-        val wait: MutableState<Boolean> = remember {
-            mutableStateOf(false)
-        }
-        if (wait.value) {
-            CenterRow(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(60.dp)
-                .clickable {
-                    wait.value = true
+            TextContentL(stringResource(R.string.Intro))
+            TextContentL(stringResource(R.string.Intro_n1))
+            TextContentL(stringResource(R.string.Intro_n2))
+
+            Spacer(modifier = Modifier.height(64.dp))
+
+            val email = remember { mutableStateOf("") }
+            val password = remember { mutableStateOf("") }
+            val waitEmail = remember { mutableStateOf(false) }
+
+            InputSpace(stringResource(R.string.email), email)
+            InputSpace(stringResource(R.string.password), password)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AestheticButton(
+                content = {
+                    if (waitEmail.value == false) {
+                        TextTitleS(
+                            buildAnnotatedString {
+                                withStyle(SpanStyle(color = Color.White)) {
+                                    append("Login")
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .align(Center),
+                            mod = true
+                        )
+                    } else {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                onClick = {
+                    waitEmail.value = true
                     coroutineScope.launch {
-                        viewModel.authManagerState.loginGoogleUser(context)
+                        viewModelAuth.authManagerState.signInWithEmail(email.value, password.value)
                             .collect { result ->
-                                wait.value = false
+                                waitEmail.value = false
                                 if (result is AuthResponse.Success) {
-                                    signedIn.value =
-                                        viewModel.authManagerState.getGoogleProfilePictureUrl()
-                                    navHandler.menuFromSignIn()
+                                    viewModelAuth.updateLocalCred(
+                                        viewModelAuth.authManagerState.getAuthToken() ?: ""
+                                    )
+                                    Log.e("UserId", viewModelAuth.localCred)
+                                    viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
+                                    viewModelAuth.navHandler.menuFromSignIn()
                                 } else {
                                     Log.d("AuthManager", result.toString())
                                 }
                             }
                     }
                 }
-        ) {
-            CenterRow (
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CenterRow(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface)
-            ){
-                TextTitleS(
-                    stringResource(R.string.signInGoogle),
+                    .height(50.dp)
+            ) {
+                CenterColumn(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .width(100.dp)
+                        .fillMaxHeight()
+                ) {
+                    HorizontalDivider(color = Color.Gray)
+                }
+                Text(
+                    text = stringResource(R.string.or),
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .padding(start = 5.dp, bottom = 5.dp, end = 5.dp)
                 )
-                Image(
-                    painter = painterResource(R.drawable.google),
-                    contentDescription = null,
+                CenterColumn(
                     modifier = Modifier
-                        .height(30.dp)
+                        .width(100.dp)
+                        .fillMaxHeight()
+                ) {
+                    HorizontalDivider(color = Color.Gray)
+                }
+            }
+
+            val wait: MutableState<Boolean> = remember {
+                mutableStateOf(false)
+            }
+            if (wait.value) {
+                CenterRow(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            }
+
+            Card(
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(60.dp)
+                    .clickable {
+                        wait.value = true
+                        coroutineScope.launch {
+                            viewModelAuth.authManagerState.loginGoogleUser(context)
+                                .collect { result ->
+                                    wait.value = false
+                                    if (result is AuthResponse.Success) {
+                                        userPref.saveAuthToken(viewModelAuth.authManagerState.getAuthToken())
+                                        Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelAuth.authManagerState.isSignedIn()}")
+                                        viewModelAuth.navHandler.menuFromSignIn()
+                                    } else {
+                                        Log.d("AuthManager", result.toString())
+                                    }
+                                }
+                        }
+                    }
+            ) {
+                CenterRow(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    TextTitleS(
+                        stringResource(R.string.signInGoogle),
+                        modifier = Modifier
+                            .padding(8.dp)
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.google),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .height(30.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            CenterRow {
+                TextContentM(stringResource(R.string.belumPunyaAkun))
+                TextContentM(
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                            append(stringResource(R.string.daftar))
+                        }
+                    },
+                    mod = true,
+                    modifier = Modifier
+                        .clickable { viewModelAuth.navHandler.signUpFromSignIn() }
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        CenterRow {
-            TextContentM(stringResource(R.string.belumPunyaAkun))
-            TextContentM(
-                buildAnnotatedString {
-                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                        append(stringResource(R.string.daftar))
-                    }
-                },
-                mod = true,
-                modifier = Modifier
-                    .clickable { navHandler.signUpFromSignIn() }
-            )
         }
     }
 }

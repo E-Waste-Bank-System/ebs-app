@@ -1,5 +1,6 @@
 package com.example.ebs.ui.face.detail
 
+import android.util.Log
 import android.widget.ProgressBar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Alignment.Companion.TopStart
@@ -48,7 +50,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.ebs.R
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.face.components.shapes.Indicator
@@ -67,12 +71,15 @@ import com.example.ebs.ui.navigation.NavigationHandler
 
 @Composable
 fun WasteDetailScreen(
-    navHandler: NavigationHandler,
+    navController: NavController,
     barang: String,
-    viewModel: WasteDetailViewModel = hiltViewModel()
+    viewModel: WasteDetailViewModel = hiltViewModel(),
+    viewModelAuth: AuthViewModel = hiltViewModel()
 ) {
-    val reminder = remember { mutableStateOf(false) }
-    TopBarPage("Result",navHandler){
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is Result")
+    val reminder = rememberSaveable { mutableStateOf(false) }
+    TopBarPage("Result", viewModelAuth.navHandler){
         Box (
             modifier = Modifier
                 .fillMaxSize()
@@ -185,7 +192,7 @@ fun WasteDetailScreen(
             if(!reminder.value) {
                 ReminderResult(
                     reminder,
-                    navHandler,
+                    viewModelAuth.navHandler,
                     Modifier
                         .align(TopCenter)
                         .padding(

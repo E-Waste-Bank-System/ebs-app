@@ -118,9 +118,9 @@ fun AlbumScreen(modifier: Modifier = Modifier,
     }
 }
 
-@Preview(widthDp = 360, heightDp = 640)
-@Composable
-fun MainScreenPreview() {
-    val viewModel = AlbumViewModel(Dispatchers.Default)
-    AlbumScreen(viewModel = viewModel)
-}
+//@Preview(widthDp = 360, heightDp = 640)
+//@Composable
+//fun MainScreenPreview() {
+//    val viewModel = AlbumViewModel(Dispatchers.Default)
+//    AlbumScreen(viewModel = viewModel)
+//}

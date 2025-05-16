@@ -22,30 +22,27 @@ import dev.chrisbanes.haze.hazeSource
 @Composable
 fun BotBarPage(
     navController: NavController,
-    signedIn: MutableState<String?>,
     modifier: Modifier = Modifier,
     hazeState: HazeState = remember { HazeState() },
     content: @Composable () -> Unit
 ){
     Scaffold(
         bottomBar = {
-            if (signedIn.value != null) {
-                BottomNavigation(
-                    hazeState = hazeState
-                ) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    MainNavbar.forEach { navItem ->
-                        BottomNavigationItem(
-                            navItem,
-                            selected = currentDestination
-                                ?.hierarchy
-                                ?.any {
-                                    extractRouteName(navItem.route) == extractRouteName(it.route)
-                                } == true,
-                            navController = navController
-                        )
-                    }
+            BottomNavigation(
+                hazeState = hazeState
+            ) {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                MainNavbar.forEach { navItem ->
+                    BottomNavigationItem(
+                        navItem,
+                        selected = currentDestination
+                            ?.hierarchy
+                            ?.any {
+                                extractRouteName(navItem.route) == extractRouteName(it.route)
+                            } == true,
+                        navController = navController
+                    )
                 }
             }
         }

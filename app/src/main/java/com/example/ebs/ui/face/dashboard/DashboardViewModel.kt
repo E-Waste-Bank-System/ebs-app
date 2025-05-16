@@ -22,12 +22,9 @@ import javax.inject.Inject
 class DashboardViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val itemsRepository: DataTestRepository,
-    private val authManager: AuthManager,
     private val databaseManager: DatabaseManager
 ) : ViewModel() {
     val hazeState = HazeState()
-    val authManagerState: AuthManager
-        get() = authManager
     private val databaseManagerState: DatabaseManager
         get() = databaseManager
 
@@ -42,7 +39,7 @@ class DashboardViewModel @Inject constructor(
 
     init {
         loadArticles()
-        loadRequests()
+//        loadRequests()
     }
 
     fun refresh() {

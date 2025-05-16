@@ -6,6 +6,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -23,8 +24,8 @@ class MainActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContent {
             EBSTheme {
-                val cred = rememberSaveable { mutableStateOf<String?>(null) }
-                MyNavigationg(cred)
+                val userPreferencesRepository = (application as EbsApplication).userPreferencesRepository
+                MyNavigationg(userPreferencesRepository)
             }
         }
     }

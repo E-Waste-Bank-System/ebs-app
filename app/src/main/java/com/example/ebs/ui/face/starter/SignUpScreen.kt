@@ -24,8 +24,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.ebs.R
+import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.service.AuthResponse
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.inputs.AestheticButton
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.face.components.structures.CenterRow
@@ -38,17 +41,19 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(
-    navHandler: NavigationHandler,
-    signedIn: MutableState<String?>,
-    viewModel: SignUpViewModel = hiltViewModel()
+    navController: NavController,
+    userPref: UserPreferencesRepository,
+    viewModelAuth: AuthViewModel = hiltViewModel()
 ) {
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is SignUp")
     val coroutineScope = rememberCoroutineScope()
     val exitDialogue = remember { mutableStateOf(false) }
 
     BackHandler { exitDialogue.value = true }
 
     if (exitDialogue.value) {
-        navHandler.exitDialogue()
+        viewModelAuth.navHandler.exitDialogue()
         exitDialogue.value = false
     }
 
@@ -94,13 +99,14 @@ fun SignUpScreen(
             },
             onClick = {
                 coroutineScope.launch {
-                    viewModel.authManagerState.signUpWithEmail(email.value, password.value)
+                    viewModelAuth.authManagerState.signUpWithEmail(email.value, password.value)
                         .collect { result ->
                             waitEmail.value = false
                             if(result is AuthResponse.Success) {
-                                signedIn.value = viewModel.authManagerState.getUserId()
-                                Log.e("UserId","${signedIn.value}")
-                                navHandler.menuFromSignUp()
+                                viewModelAuth.updateLocalCred(viewModelAuth.authManagerState.getAuthToken() ?: "")
+                                Log.e("UserId", viewModelAuth.localCred)
+                                viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
+                                viewModelAuth.navHandler.menuFromSignUp()
                             } else {
                                 Log.d("AuthManager", result.toString())
                             }
@@ -121,7 +127,7 @@ fun SignUpScreen(
                 },
                 mod = true,
                 modifier = Modifier
-                    .clickable { navHandler.signInFromSignUp() }
+                    .clickable { viewModelAuth.navHandler.signInFromSignUp() }
             )
         }
     }

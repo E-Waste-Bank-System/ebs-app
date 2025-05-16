@@ -53,7 +53,7 @@ fun InputSpace(
             )
         }
         },
-        visualTransformation = if (hide.value == true) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if(text == "Password") { if (hide.value == true) PasswordVisualTransformation() else VisualTransformation.None }else VisualTransformation.None,
         modifier = modifier
             .fillMaxWidth(0.8f)
             .padding(8.dp)

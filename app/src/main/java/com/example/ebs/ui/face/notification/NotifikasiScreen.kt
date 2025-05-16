@@ -1,5 +1,6 @@
 package com.example.ebs.ui.face.notification
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,6 +20,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.face.components.shapes.Indicator
@@ -30,11 +33,14 @@ import com.example.ebs.ui.face.notification.CardNotification
 
 @Composable
 fun NotifikasiScreen(
-    navHandler: NavigationHandler,
+    navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: NotifikasiViewModel = hiltViewModel()
+    viewModel: NotifikasiViewModel = hiltViewModel(),
+    viewModelAuth: AuthViewModel = hiltViewModel(),
 ) {
-    TopBarPage("Notifikasi",navHandler) {
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is Notifikasi")
+    TopBarPage("Notifikasi",viewModelAuth.navHandler) {
         LazyColumn {
             items(1) {
                 CenterRow(

@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +29,7 @@ import com.example.ebs.ui.face.components.texts.TextTitleM
 import com.example.ebs.ui.navigation.NavigationHandler
 
 @Composable
-fun Greeting(navHandler: NavigationHandler, signedIn: MutableState<String?>){
+fun Greeting(navHandler: NavigationHandler, signedIn: String){
     CenterRow(
         hArr = Arrangement.SpaceBetween,
         vAli = Alignment.Top,

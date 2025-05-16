@@ -11,7 +11,7 @@ import kotlin.random.Random
 class WaterNotificationService(
     private val context: Context
 ){
-    private val notificationManager=context.getSystemService(NotificationManager::class.java)
+    private val notificationManager = context.getSystemService(NotificationManager::class.java)
     fun showBasicNotification(){
         val notification= NotificationCompat.Builder(context,"water_notification")
             .setContentTitle("Water Reminder")

@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.data.repositories.remote.DataTest
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.face.components.structures.CenterRow
@@ -44,14 +45,13 @@ import com.example.ebs.ui.navigation.NavigationHandler
 @Composable
 fun DetectionListScreen(
     navController: NavController,
-    signedIn: MutableState<String?>,
-    navHandler: NavigationHandler,
-    modifier: Modifier = Modifier,
-    viewModel: DetectionListViewModel = hiltViewModel()
+    viewModel: DetectionListViewModel = hiltViewModel(),
+    viewModelAuth: AuthViewModel = hiltViewModel()
 ) {
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is Histories")
     BotBarPage(
         navController = navController,
-        signedIn = signedIn,
         hazeState = viewModel.hazeState
     ) {
         val jumlah = 10
@@ -91,7 +91,7 @@ fun DetectionListScreen(
                                 .align(Alignment.BottomEnd)
                                 .clickable {
                                     Log.e("Ini","Ini keklikan???? ${barang.value[it]}")
-                                    navHandler.detailFromMenu(barang = barang.value[it])
+                                    viewModelAuth.navHandler.detailFromMenu(barang = barang.value[it])
                                 }
                         ) {
                             Box(

@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.ebs.data.structure.Articles
 import com.example.ebs.data.structure.Requests
 import com.example.ebs.ui.face.components.shapes.Indicator
 import com.example.ebs.ui.face.components.structures.CenterColumn
@@ -27,7 +28,8 @@ import kotlinx.datetime.Instant
 
 @Composable
 fun Trending(
-    requests: List<Requests>
+//    requests: List<Requests>
+    requests: List<Articles>
 ){
     HeadlineDashboard {
         TextTitleM("Terkini")
@@ -83,7 +85,7 @@ fun Trending(
                     items(
                         requests,
                         key = { request -> request.id },
-                    ) { request: Requests ->
+                    ) { request ->
                         CardDashboard(
                             modifier = Modifier
                                 .height(125.dp)

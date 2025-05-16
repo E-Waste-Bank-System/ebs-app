@@ -10,14 +10,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.ebs.data.repositories.UserPreferencesRepository
 import dagger.hilt.android.HiltAndroidApp
 
-private const val LAYOUT_PREFERENCE_NAME = "layout_preferences"
+private const val APP_MEMORY = "appMemory"
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = LAYOUT_PREFERENCE_NAME
+    name = APP_MEMORY
 )
 
 @HiltAndroidApp
 class EbsApplication: Application() {
-    private lateinit var userPreferencesRepository: UserPreferencesRepository
+    internal lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onCreate() {
         //container = AppDataContainer(this)
@@ -29,7 +29,7 @@ class EbsApplication: Application() {
             "Water",
             NotificationManager.IMPORTANCE_HIGH
         )
-        val notificationManager=getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         notificationManager.createNotificationChannel(notificationChannel)
     }

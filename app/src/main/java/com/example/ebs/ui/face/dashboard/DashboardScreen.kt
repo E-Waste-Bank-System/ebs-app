@@ -1,5 +1,6 @@
 package com.example.ebs.ui.face.dashboard
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -13,7 +14,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,71 +23,94 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.ebs.data.repositories.UserPreferencesRepository
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.gradients.getGredienBackground
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.face.components.structures.CenterColumn
-import com.example.ebs.ui.navigation.NavigationHandler
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     navController: NavController,
-    signedIn: MutableState<String?>,
-    navHandler: NavigationHandler,
+    userPref: UserPreferencesRepository,
     viewModel: DashboardViewModel = hiltViewModel(),
+    viewModelAuth: AuthViewModel = hiltViewModel(),
     //    viewModel: DashboardViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val exitDialogue = remember { mutableStateOf(false) }
+    viewModelAuth.initializeNavHandler(navController)
+    val checkIn = remember { mutableStateOf(false) }
 
-    BackHandler { exitDialogue.value = true }
-
-    if (exitDialogue.value) {
-        navHandler.exitDialogue()
-        exitDialogue.value = false
+    LaunchedEffect(Unit) {
+        val token = userPref.authToken.firstOrNull()
+        viewModelAuth.updateLocalCred(token ?: "")
+        Log.e("TAG", "SecondCredCheck: ${viewModelAuth.localCred.take(10)}")
+        checkIn.value = true
     }
-    
-    BotBarPage(
-        navController = navController,
-        signedIn = signedIn,
-        modifier = Modifier
-            .background(getGredienBackground(
-                MaterialTheme.colorScheme.primary,
-                MaterialTheme.colorScheme.background
-        )),
-        hazeState = viewModel.hazeState
-    ){
-        val requests by viewModel.requests.collectAsState()
-        val articles by viewModel.articles.collectAsState()
-        val isLoading by viewModel.isLoading.collectAsState()
-        val pullRefreshState = rememberPullToRefreshState()
-        Box(
+
+    Log.d("Route", "This is Dashboard")
+    if(viewModelAuth.authManagerState.isSignedIn() && checkIn.value) {
+        val exitDialogue = remember { mutableStateOf(false) }
+
+        BackHandler { exitDialogue.value = true }
+
+        if (exitDialogue.value) {
+            viewModelAuth.navHandler.exitDialogue()
+            exitDialogue.value = false
+        }
+
+        BotBarPage(
+            navController = navController,
             modifier = Modifier
-                .fillMaxSize()
-                .pullToRefresh(
-                    state = pullRefreshState,
-                    isRefreshing = isLoading,
-                    onRefresh = {
-                        viewModel.refresh()
-                    }
-                ),
-            contentAlignment = Alignment.TopStart
-        ) {
-            CenterColumn (
-                modifier = Modifier
-                    .scrollable(    
-                        state = rememberScrollableState { 0f },
-                        orientation = Orientation.Vertical
+                .background(
+                    getGredienBackground(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.background
                     )
-            ){
-                Greeting(navHandler, signedIn)
-                Trending(requests)
-                Sorotan(articles)
+                ),
+            hazeState = viewModel.hazeState
+        ) {
+//            val requests by viewModel.requests.collectAsState()
+            val articles by viewModel.articles.collectAsState()
+            val isLoading by viewModel.isLoading.collectAsState()
+            val pullRefreshState = rememberPullToRefreshState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullToRefresh(
+                        state = pullRefreshState,
+                        isRefreshing = isLoading,
+                        onRefresh = {
+                            viewModel.refresh()
+                        }
+                    ),
+                contentAlignment = Alignment.TopStart
+            ) {
+                CenterColumn(
+                    modifier = Modifier
+                        .scrollable(
+                            state = rememberScrollableState { 0f },
+                            orientation = Orientation.Vertical
+                        )
+                ) {
+                    Greeting(viewModelAuth.navHandler, viewModelAuth.localCred)
+                    Trending(articles)
+                    Sorotan(articles)
+                }
+                Indicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    isRefreshing = isLoading,
+                    state = pullRefreshState
+                )
             }
-            Indicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                isRefreshing = isLoading,
-                state = pullRefreshState
-            )
+        }
+    } else {
+        LaunchedEffect(Unit) {
+            delay(5000)
+            Log.e("tim out","Ups checknya kelamaan")
+            viewModelAuth.navHandler.signInFromWelcome()
         }
     }
 }

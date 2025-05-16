@@ -3,10 +3,13 @@ package com.example.ebs.ui.face.scan
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.compose.CameraXViewfinder
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -61,7 +64,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.example.ebs.R
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.shapes.TopBarPage
 import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.face.dialogue.ReqCam
@@ -70,22 +75,23 @@ import com.example.ebs.ui.navigation.destinations.Route
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-
+import java.io.File
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun ScanScreen(
-    signedIn: MutableState<String?>,
-    navHandler: NavigationHandler,
-    modifier: Modifier = Modifier,
-    viewModel: ScanScreenViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: ScanScreenViewModel = hiltViewModel(),
+    viewModelAuth: AuthViewModel = hiltViewModel()
 ){
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is Scan")
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
     if (cameraPermissionState.status.isGranted) {
-        CameraPreviewContent(viewModel,navHandler)
+        CameraPreviewContent(viewModel,viewModelAuth.navHandler)
     } else {
-        CameraPermissionRequester(navHandler){}
+        CameraPermissionRequester(viewModelAuth.navHandler){}
 //        CenterColumn(
 //            modifier = modifier.fillMaxSize().wrapContentSize().widthIn(max = 480.dp)
 //        ) {
@@ -120,7 +126,9 @@ private fun CameraPreviewContent(
 ) {
     val surfaceRequest by viewModel.surfaceRequest.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    LaunchedEffect(lifecycleOwner) {
+    val imageCapture = remember { viewModel.imageCapture } // Add this to your ViewModel
+
+    LaunchedEffect(lifecycleOwner, viewModel.cameraSelector.collectAsStateWithLifecycle().value) {
         viewModel.bindToCamera(context.applicationContext, lifecycleOwner)
     }
 
@@ -177,7 +185,22 @@ private fun CameraPreviewContent(
                     .fillMaxWidth()
                     .padding(vertical = 50.dp)
             ) {
-                Spacer(modifier = Modifier.weight(1f))
+                CenterRow(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    IconButton(
+                        onClick = { viewModel.toggleCamera() },
+                        modifier = Modifier
+                            .padding(16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.camera_switch_outline), // Add a suitable icon
+                            contentDescription = "Switch Camera",
+                            tint = Color.White
+                        )
+                    }
+                }
                 CenterRow(
                     modifier = Modifier
                         .weight(0.8f)
@@ -242,7 +265,23 @@ private fun CameraPreviewContent(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape)
-                                    .clickable { }
+                                    .clickable {
+                                        val photoFile = File(context.cacheDir, "captured_image_${System.currentTimeMillis()}.jpg")
+                                        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+                                        imageCapture.takePicture(
+                                            outputOptions,
+                                            ContextCompat.getMainExecutor(context),
+                                            object : ImageCapture.OnImageSavedCallback {
+                                                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                                    // Use the image URI: output.savedUri or photoFile
+                                                    // Update your ViewModel/state here
+                                                }
+                                                override fun onError(exception: ImageCaptureException) {
+                                                    // Handle error
+                                                }
+                                            }
+                                        )
+                                    }
                             )
                         }
                         Spacer(modifier = Modifier.weight(0.1f))
@@ -290,6 +329,7 @@ fun CameraPermissionRequester(navHandler: NavigationHandler, onPermissionGranted
                 },
                 leftAct = {
                     showDialog.value = false
+                    navHandler.back()
                 },
             )
         }

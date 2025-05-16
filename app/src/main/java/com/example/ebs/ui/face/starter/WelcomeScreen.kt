@@ -1,5 +1,6 @@
 package com.example.ebs.ui.face.starter
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +30,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.ebs.R
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.structures.CenterColumn
 import com.example.ebs.ui.face.components.structures.CenterRow
 import com.example.ebs.ui.face.components.texts.TextContentM
@@ -38,8 +42,11 @@ import com.example.ebs.ui.navigation.NavigationHandler
 
 @Composable
 fun WelcomeScreen(
-    navHandler: NavigationHandler
+    navController: NavController,
+    viewModelAuth: AuthViewModel = hiltViewModel(),
 ) {
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is Welcome")
     CenterColumn(
         vArr = Arrangement.Top,
         modifier = Modifier
@@ -99,7 +106,7 @@ fun WelcomeScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ){
                 Button(
-                    onClick = { navHandler.signInFromWelcome() },
+                    onClick = { viewModelAuth.navHandler.signInFromWelcome() },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors().copy(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -114,7 +121,7 @@ fun WelcomeScreen(
                 }
 
                 Button(
-                    onClick = { navHandler.signUpFromWelcome() },
+                    onClick = { viewModelAuth.navHandler.signUpFromWelcome() },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors().copy(
                         containerColor = Color.Transparent,
@@ -128,9 +135,7 @@ fun WelcomeScreen(
                     Text(stringResource(R.string.daftar))
                 }
             }
-
             Spacer(modifier = Modifier.height(64.dp))
-
         }
     }
 }

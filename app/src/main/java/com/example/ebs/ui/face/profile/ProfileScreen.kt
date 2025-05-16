@@ -1,6 +1,7 @@
 package com.example.ebs.ui.face.profile
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,27 +40,35 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.util.CoilUtils.result
 import com.example.ebs.R
+import com.example.ebs.data.repositories.UserPreferencesRepository
+import com.example.ebs.service.AuthResponse
 import com.example.ebs.service.WaterNotificationService
+import com.example.ebs.ui.face.AuthViewModel
 import com.example.ebs.ui.face.components.gradients.getGredienButton
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.navigation.NavigationHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    signedIn: MutableState<String?>,
-    navHandler: NavigationHandler,
-    viewModel: ProfileViewModel = hiltViewModel()
+    userPref: UserPreferencesRepository,
+    viewModel: ProfileViewModel = hiltViewModel(),
+    viewModelAuth: AuthViewModel = hiltViewModel()
 ) {
+    viewModelAuth.initializeNavHandler(navController)
+    Log.d("Route", "This is Profile")
     val postNotificationPermission = rememberPermissionState(permission = android.Manifest.permission.POST_NOTIFICATIONS)
 
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val waterNotificationService = WaterNotificationService(context)
 
     LaunchedEffect(key1 = true) {
@@ -68,10 +78,10 @@ fun ProfileScreen(
     }
 
     waterNotificationService.showBasicNotification()
+    val photo = viewModelAuth.authManagerState.getGoogleProfilePictureUrl()
 
     BotBarPage(
         navController = navController,
-        signedIn = signedIn,
         hazeState = viewModel.hazeState
     ){
         Spacer(modifier = Modifier.height(32.dp))
@@ -98,9 +108,9 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .align(Alignment.Center)
                 ){
-                    if (signedIn.value != null) {
+                    if (photo != null) {
                         Image(
-                            painter = rememberAsyncImagePainter(signedIn.value),
+                            painter = rememberAsyncImagePainter(photo),
                             contentDescription = "Account Image",
                             modifier = Modifier
                                 .size(80.dp)
@@ -126,7 +136,7 @@ fun ProfileScreen(
                         color = Color.White,
                         modifier = Modifier
                             .clickable {
-                                navHandler.dialogueSetting()
+                                viewModelAuth.navHandler.dialogueSetting()
                             }
                     )
                     Text(
@@ -144,8 +154,18 @@ fun ProfileScreen(
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .align(Alignment.TopEnd)
                         .clickable{
-                            viewModel.authManagerState.signOut()
-                            navHandler.welcomeFromMenu()
+                            coroutineScope.launch {
+                                viewModel.authManagerState.signOut()
+                                    .collect{result ->
+                                        if (result is AuthResponse.Success) {
+                                            userPref.resetAuthToken()
+                                            Log.e("Udah Keluar?", "${viewModelAuth.authManagerState.isSignedIn()}")
+                                            viewModelAuth.navHandler.welcomeFromMenu()
+                                        } else {
+                                            Log.d("AuthManager", result.toString())
+                                        }
+                                    }
+                            }
                         }
                 ) {
                     Text(

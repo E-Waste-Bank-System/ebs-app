@@ -7,8 +7,5 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    private val authManager: AuthManager
 ) : ViewModel() {
-    val authManagerState: AuthManager
-        get() = authManager
 }

@@ -1,6 +1,8 @@
 package com.example.ebs.service
 
 import android.content.Context
+import android.util.Base64
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -8,6 +10,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.auth.providers.IDTokenProvider
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +22,40 @@ import javax.inject.Inject
 class AuthManager @Inject constructor(
     private val supabase: SupabaseClient
 ) {
+    private var googleIdTokenCredential: GoogleIdTokenCredential? = null
+
+    fun signOut(): Flow<AuthResponse> = flow {
+        try {
+            supabase.auth.signOut()
+            emit(AuthResponse.Success)
+        } catch (e: Exception) {
+            emit(AuthResponse.Error(e.localizedMessage))
+        }
+    }
+
+    fun isSignedIn(): Boolean {
+        Log.e("TAG", "isSignedIn: ${supabase.auth.currentUserOrNull() != null}")
+        return supabase.auth.currentUserOrNull() != null
+    }
+
+    fun getAuthToken(): String? {
+        return supabase.auth.currentSessionOrNull()?.accessToken
+    }
+
+    fun signInAuthToken(token: String): Flow<AuthResponse> = flow {
+        try {
+            Log.e("Inui","Inininin ${isSignedIn()}")
+            supabase.auth.signInWith(IDToken) {
+                idToken = token
+                provider = Google
+            }
+            emit(AuthResponse.Success)
+        } catch (e: Exception) {
+            Log.e("Itui","Itititit ${isSignedIn()}")
+            emit(AuthResponse.Error(e.localizedMessage))
+        }
+    }
+
     fun signUpWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
         try{
             supabase.auth.signUpWith(Email){
@@ -42,12 +79,6 @@ class AuthManager @Inject constructor(
             emit(AuthResponse.Error(e.localizedMessage))
         }
     }
-
-    fun getUserId(): String? {
-        return supabase.auth.currentUserOrNull()?.id
-    }
-
-    private var googleIdTokenCredential: GoogleIdTokenCredential? = null
 
     fun loginGoogleUser(context: Context): Flow<AuthResponse> = flow {
         val hashedNonce = createNonce()
@@ -80,25 +111,24 @@ class AuthManager @Inject constructor(
     }
 
     fun getGoogleProfilePictureUrl(): String? {
-        val payload = googleIdTokenCredential?.idToken?.let { idToken ->
+        val payload = if(googleIdTokenCredential != null) googleIdTokenCredential?.idToken?.let { idToken ->
             val parts = idToken.split(".")
             if (parts.size == 3) {
-                val payloadJson = android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE)
+                val payloadJson = Base64.decode(parts[1], Base64.URL_SAFE)
+                val json = String(payloadJson)
+                val regex = """"picture"\s*:\s*"([^"]+)"""".toRegex()
+                regex.find(json)?.groups?.get(1)?.value
+            } else null
+        } else supabase.auth.currentSessionOrNull()?.accessToken?.let { idToken ->
+            val parts = idToken.split(".")
+            if (parts.size == 3) {
+                val payloadJson = Base64.decode(parts[1], Base64.URL_SAFE)
                 val json = String(payloadJson)
                 val regex = """"picture"\s*:\s*"([^"]+)"""".toRegex()
                 regex.find(json)?.groups?.get(1)?.value
             } else null
         }
         return payload
-    }
-
-    fun signOut(): Flow<AuthResponse> = flow {
-        try {
-            supabase.auth.signOut()
-            emit(AuthResponse.Success)
-        } catch (e: Exception) {
-            emit(AuthResponse.Error(e.localizedMessage))
-        }
     }
 
     fun createNonce(): String {
