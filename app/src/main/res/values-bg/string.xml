@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="app_name">Електронни отпадъци Хъб</string>
+    <string name="Intro">Има нещо, което не трябва да се пропуска</string>
+    <string name="Intro_n1">за да можете да изследвате повече</string>
+    <string name="Intro_n2">в това приложение</string>
+    <string name="signInGoogle">Продължи с Google</string>
+    <string name="belumPunyaAkun">Нямате акаунт?</string>
+    <string name="daftar">Регистрирай се</string>
+    <string name="username">Потребителско име</string>
+    <string name="password">Парола</string>
+    <string name="helloSignIn">Здравей,</string>
+    <string name="temanSignIn">Приятелю!</string>
+    <string name="login">Вход</string>
+    <string name="or">Или</string>
+    <string name="open">Достатъчно</string>
+    <string name="open_n1">Сканирай</string>
+    <string name="open_n2">Ние ще се погрижим за останалото!</string>
+    <string name="open_n3">Нашата интелигентна технология ще разпознае вида</string>
+    <string name="open_n4">на вашите електронни отпадъци и ще предостави стъпки</string>
+    <string name="open_n5">за лесното им управление</string>
+    <string name="sign_up">Създай акаунт!</string>
+    <string name="email">Имейл</string>
+    <string name="notel">Телефонен номер</string>
+    <string name="sudahPunyaAkun">Вече имате акаунт?</string>
+    <string name="history">Последно</string>
+    <string name="seeall">Виж всички</string>
+    <string name="noTrending">Все още няма открити.</string>
+    <string name="ayo">Да открием отпадъци</string>
+    <string name="elek">електрониката ви.</string>
+</resources>
