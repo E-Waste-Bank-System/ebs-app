@@ -34,6 +34,9 @@ class NavigationHandler(private val navController: NavController) {
             restoreState = true
         }
     }
+    private fun dialogueNav(route: Any) {
+        navController.navigate(route)
+    }
     fun back() {
         navController.popBackStack()
     }
@@ -62,6 +65,10 @@ class NavigationHandler(private val navController: NavController) {
         justNavigate(Route.Article(data = json))
     }
     val riwayat: () -> Unit = { justNavigate(Route.Riwayat) }
+    val lokasi: () -> Unit = { dialogueNav(Route.Location) }
+    val bantuan: () -> Unit = { dialogueNav(Route.Bantuan) }
+    val beriNilai: () -> Unit = { dialogueNav(Route.BeriNilai) }
+    val kontak: () -> Unit = { dialogueNav(Route.Kontak) }
     val dialogueSetting: () -> Unit = { justNavigate(Route.Settings) }
     val exitDialogue: () -> Unit = { justNavigate(Route.Exit) }
 }

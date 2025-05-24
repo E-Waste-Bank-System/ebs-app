@@ -10,7 +10,11 @@ import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.data.structure.remote.ebs.articles.Article
 import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
 import com.example.ebs.ui.dialogues.ApplyRequest
+import com.example.ebs.ui.dialogues.Bantuan
+import com.example.ebs.ui.dialogues.BeriNilai
 import com.example.ebs.ui.dialogues.Exit
+import com.example.ebs.ui.dialogues.Kontak
+import com.example.ebs.ui.dialogues.Lokasi
 import com.example.ebs.ui.navigation.destinations.Route
 import com.example.ebs.ui.screens.MainViewModel
 import com.example.ebs.ui.screens.article.ArticleScreen
@@ -30,6 +34,7 @@ fun NavGraphBuilder.mainNav(
     navController: NavController,
     userPref: UserPreferencesRepository,
     viewModelAuth: MainViewModel,
+    navigateTo: String?,
 ){
     composable<Route.Welcome>{
         WelcomeScreen(navController,viewModelAuth)
@@ -38,7 +43,7 @@ fun NavGraphBuilder.mainNav(
         SignUpScreen(navController,userPref,viewModelAuth)
     }
     composable<Route.SignIn> {
-        SignInScreen(navController,userPref,viewModelAuth)
+        SignInScreen(navController,userPref,viewModelAuth,navigateTo)
     }
     composable<Route.Detail> { backStackEntry ->
         val data: DataDetections = backStackEntry.arguments?.getString("data")?.let {
@@ -66,6 +71,18 @@ fun NavGraphBuilder.mainNav(
     }
     composable<Route.Profile> {
         ProfileScreen(navController, userPref,viewModelAuth)
+    }
+    dialog<Route.Location> {
+        Lokasi()
+    }
+    dialog<Route.Bantuan> {
+        Bantuan()
+    }
+    dialog<Route.BeriNilai> {
+        BeriNilai()
+    }
+    dialog<Route.Kontak> {
+        Kontak()
     }
     dialog<Route.Settings> {
         ApplyRequest()

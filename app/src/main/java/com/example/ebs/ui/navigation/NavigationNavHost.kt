@@ -21,6 +21,7 @@ import com.example.ebs.ui.screens.MainViewModel
 @Composable
 fun MyNavigationg(
     userPref: UserPreferencesRepository,
+    navigateTo: String? = null,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     viewModelAuth: MainViewModel = hiltViewModel(),
@@ -41,7 +42,7 @@ fun MyNavigationg(
                 startDestination = if (!loadPrevious.value) Route.Welcome else (Route.Dashboard),
                 modifier = modifier
             ) {
-                mainNav(navController, userPref, viewModelAuth)
+                mainNav(navController, userPref, viewModelAuth, navigateTo)
             }
         }
     } else {

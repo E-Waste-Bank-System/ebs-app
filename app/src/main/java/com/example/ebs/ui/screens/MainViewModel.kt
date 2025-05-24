@@ -65,13 +65,8 @@ class MainViewModel @Inject constructor(
         localCred = token.toString()
     }
 
-    private fun updateUserInfo(info: GoogleProfileFields) {
-        localInfo = info
-    }
-
     fun getUserData(){
-        updateUserInfo(authManagerState.getGoogleProfileInfo() ?:
-        GoogleProfileFields())
+        updateUserInfo(authManagerState.getGoogleProfileInfo() ?: GoogleProfileFields())
     }
 
     fun refresh() {
@@ -97,6 +92,11 @@ class MainViewModel @Inject constructor(
         val token = ebsRepositoryState.loginUser(userId ?: "")
         val result = ebsRepositoryState.uploadImage(userId ?: "", filePath, token)
         _upImage.value = result
+    }
+
+
+    private fun updateUserInfo(info: GoogleProfileFields) {
+        localInfo = info
     }
 
     private fun loadArticles() {

@@ -54,7 +54,8 @@ import kotlinx.coroutines.launch
 fun SignInScreen(
     navController: NavController,
     userPref: UserPreferencesRepository,
-    viewModelAuth: MainViewModel
+    viewModelAuth: MainViewModel,
+    navigateTo: String?
 ) {
     val checkIn = remember { mutableStateOf(false) }
 
@@ -63,6 +64,12 @@ fun SignInScreen(
 //        viewModelAuth.updateLocalCred(token ?: "")
 //        Log.e("TAG", "OneHalfCredCheck: ${viewModelAuth.localCred.take(10)}")
         checkIn.value = true
+    }
+
+    LaunchedEffect(navigateTo) {
+        if (navigateTo == "profile") {
+            viewModelAuth.navHandler.menuFromSignIn()
+        }
     }
 
     Log.d("Route", "This is SignInScreen")

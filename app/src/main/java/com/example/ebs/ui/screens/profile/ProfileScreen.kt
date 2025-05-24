@@ -1,5 +1,6 @@
 package com.example.ebs.ui.screens.profile
 
+import android.Manifest
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -63,11 +64,13 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     Log.d("Route", "This is Profile")
-    val postNotificationPermission = rememberPermissionState(permission = android.Manifest.permission.POST_NOTIFICATIONS)
+    val postNotificationPermission = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val waterNotificationService = WaterNotificationService(context)
+
+    val userInfo = viewModelAuth.localInfo
 
     LaunchedEffect(key1 = true) {
         if (!postNotificationPermission.status.isGranted) {
@@ -75,9 +78,9 @@ fun ProfileScreen(
         }
     }
 
-    waterNotificationService.showBasicNotification()
-
-    val userInfo = viewModelAuth.localInfo
+    if(userInfo.emailVerified == "false") {
+        waterNotificationService.showBasicNotification()
+    }
 
     BotBarPage(
         navController = navController,
@@ -108,7 +111,7 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .align(Alignment.Center)
                 ){
-                    if (userInfo?.picture != null) {
+                    if (userInfo.picture != null) {
                         Image(
                             painter = rememberAsyncImagePainter(userInfo.picture),
                             contentDescription = "Account Image",
@@ -128,7 +131,7 @@ fun ProfileScreen(
                         )
                     }
                     Text(
-                        text = userInfo?.name ?: "No Name",
+                        text = userInfo.name ?: "No Name",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -136,11 +139,11 @@ fun ProfileScreen(
                         color = Color.White,
                         modifier = Modifier
                             .clickable {
-                                viewModelAuth.navHandler.dialogueSetting()
+
                             }
                     )
                     Text(
-                        text = "${userInfo?.email} | ${if (userInfo?.emailVerified == "true") "Verified" else "Not Verified"}",
+                        text = "${userInfo.email} | ${if (userInfo.emailVerified == "true") "Verified" else "Not Verified"}",
                         style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         color = Color.White,
@@ -157,7 +160,7 @@ fun ProfileScreen(
                         .background(Color.Gray)
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .align(Alignment.TopEnd)
-                        .clickable{
+                        .clickable {
 
                         }
                 ) {
@@ -185,28 +188,28 @@ fun ProfileScreen(
                     "Lokasi",painterResource(R.drawable.map_marker),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.dialogueSetting()
+                            viewModelAuth.navHandler.lokasi()
                         }
                 )
                 ProfileItem(
                     "Bantuan",painterResource(R.drawable.help_circle),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.dialogueSetting()
+                            viewModelAuth.navHandler.bantuan()
                         }
                 )
                 ProfileItem(
                     "Beri Kami Nilai",painterResource(R.drawable.comment_alert),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.dialogueSetting()
+                            viewModelAuth.navHandler.beriNilai()
                         }
                 )
                 ProfileItem(
                     "Kontak Kami",painterResource(R.drawable.account_box),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.dialogueSetting()
+                            viewModelAuth.navHandler.kontak()
                         }
                 )
             }

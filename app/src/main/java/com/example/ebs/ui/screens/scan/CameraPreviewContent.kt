@@ -17,19 +17,22 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,7 +40,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Top
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -48,6 +53,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -63,6 +69,9 @@ import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
+import com.example.ebs.ui.components.texts.TextContentM
+import com.example.ebs.ui.components.texts.TextTitleS
+import com.example.ebs.ui.dialogues.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -86,6 +95,10 @@ internal fun CameraPreviewContent(
 
     val scope = rememberCoroutineScope()
     val wait = remember { mutableStateOf(false) }
+
+    val userInfo = viewModelAuth.localInfo
+
+    val reminder = rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(lifecycleOwner, viewModel.cameraSelector.collectAsStateWithLifecycle().value) {
         viewModel.bindToCamera(context.applicationContext, lifecycleOwner)
@@ -251,60 +264,88 @@ internal fun CameraPreviewContent(
                     ) {
                         Button(
                             onClick = {
+                                if(userInfo.emailVerified == "true") {
 //                              val picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 //                              val photoFile = File(picturesDir, "captured_image_${System.currentTimeMillis()}.jpg")
-                                val photoFile = File(
-                                    context.cacheDir,
-                                    "captured_image_${System.currentTimeMillis()}.png"
-                                )
-                                val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-                                imageCapture.takePicture(
-                                    outputOptions,
-                                    ContextCompat.getMainExecutor(context),
-                                    object : ImageCapture.OnImageSavedCallback {
-                                        override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                                            scope.launch {
-                                                try {
-                                                    wait.value = true
-                                                    // Save to gallery
+                                    val photoFile = File(
+                                        context.cacheDir,
+                                        "captured_image_${System.currentTimeMillis()}.png"
+                                    )
+                                    val outputOptions =
+                                        ImageCapture.OutputFileOptions.Builder(photoFile).build()
+                                    imageCapture.takePicture(
+                                        outputOptions,
+                                        ContextCompat.getMainExecutor(context),
+                                        object : ImageCapture.OnImageSavedCallback {
+                                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                                scope.launch {
+                                                    try {
+                                                        wait.value = true
+                                                        // Save to gallery
 //                                                    val picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 //                                                    val picturesDir = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Electronic Waste Hub")
-                                                    val picturesDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Electronic Waste Hub")
-                                                    if (!picturesDir.exists()) picturesDir.mkdirs()
-                                                    val galleryFile = File(
-                                                        picturesDir,
-                                                        "captured_image_${System.currentTimeMillis()}.png"
-                                                    )
-                                                    photoFile.copyTo(galleryFile, overwrite = true)
-                                                    // Scan file so it appears in gallery
-                                                    MediaScannerConnection.scanFile(
-                                                        context,
-                                                        arrayOf(galleryFile.absolutePath),
-                                                        arrayOf("image/png"),
-                                                        null
-                                                    )
-                                                    withContext(Dispatchers.IO) {
-                                                        viewModelAuth.uploadImage(photoFile.toString())
+                                                        val picturesDir = File(
+                                                            Environment.getExternalStoragePublicDirectory(
+                                                                Environment.DIRECTORY_PICTURES
+                                                            ), "Electronic Waste Hub"
+                                                        )
+                                                        if (!picturesDir.exists()) picturesDir.mkdirs()
+                                                        val galleryFile = File(
+                                                            picturesDir,
+                                                            "captured_image_${System.currentTimeMillis()}.png"
+                                                        )
+                                                        photoFile.copyTo(
+                                                            galleryFile,
+                                                            overwrite = true
+                                                        )
+                                                        // Scan file so it appears in gallery
+                                                        MediaScannerConnection.scanFile(
+                                                            context,
+                                                            arrayOf(galleryFile.absolutePath),
+                                                            arrayOf("image/png"),
+                                                            null
+                                                        )
+                                                        withContext(Dispatchers.IO) {
+                                                            viewModelAuth.uploadImage(photoFile.toString())
+                                                        }
+                                                        val result = upImage
+                                                        if (result != DataDetections()) {
+                                                            viewModelAuth.navHandler.detailFromMenu(
+                                                                result
+                                                            )
+                                                        } else {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Failed to upload image",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                    } catch (e: Exception) {
+                                                        Log.e(
+                                                            "CameraPreviewContent",
+                                                            "Error uploading image: ${e.localizedMessage}"
+                                                        )
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Error: ${e.localizedMessage}",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    } finally {
+                                                        wait.value = false
                                                     }
-                                                    val result = upImage
-                                                    if (result != DataDetections()) {
-                                                        viewModelAuth.navHandler.detailFromMenu(result)
-                                                    } else {
-                                                        Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
-                                                    }
-                                                } catch (e: Exception) {
-                                                    Log.e("CameraPreviewContent", "Error uploading image: ${e.localizedMessage}")
-                                                    Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                                                } finally {
-                                                    wait.value = false
                                                 }
                                             }
+
+                                            override fun onError(e: ImageCaptureException) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Error: ${e.localizedMessage}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
                                         }
-                                        override fun onError(e: ImageCaptureException) {
-                                            Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                )
+                                    )
+                                }
                             },
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(
@@ -358,45 +399,62 @@ internal fun CameraPreviewContent(
                 }
             }
         }
+        if(userInfo.emailVerified == "false") {
+            if (!reminder.value){
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .clickable {
+                            reminder.value = !reminder.value
+                        }
+                ) {
+                    ReminderResult(
+                        onCancel = {
+                            viewModelAuth.navHandler.back()
+                        },
+                        onConfirm = {
+                            reminder.value = !reminder.value
+                        },
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth(0.95f)
+                            .clip(RoundedCornerShape(8.dp))
+                    ) {
+                        CenterRow(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface)
+                                .padding(10.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.star),
+                                contentDescription = "star",
+                                modifier = Modifier
+                                    .padding(5.dp)
+                                    .size(30.dp)
+                                    .align(Top),
+                                contentScale = ContentScale.Crop
+                            )
+                            CenterColumn(
+                                hAli = Alignment.Start,
+                                vArr = Arrangement.Top,
+                                modifier = Modifier
+                                    .align(Top)
+                            ) {
+                                TextTitleS(text = "PERHATIAN!")
+                                TextContentM(
+                                    text = "Email anda belum diverifikasi, silahkan verifikasi email anda untuk mendapatkan akses penuh.",
+                                    modifier = Modifier.padding(bottom = 8.dp),
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-@Composable
-fun BoxShade() {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        //atas
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .fillMaxHeight(0.3f)
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
-        //bawah
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .fillMaxHeight(0.29999f)
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
-        //kanan
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxWidth(0.1f)
-                .fillMaxHeight(0.4f)
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
-        //kiri
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxWidth(0.1f)
-                .fillMaxHeight(0.4f)
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
-    }
-}

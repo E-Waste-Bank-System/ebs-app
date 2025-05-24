@@ -1,10 +1,13 @@
 package com.example.ebs.service
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
+import com.example.ebs.MainActivity
 import com.example.ebs.R
 import kotlin.random.Random
 
@@ -13,11 +16,18 @@ class WaterNotificationService(
 ){
     private val notificationManager = context.getSystemService(NotificationManager::class.java)
     fun showBasicNotification(){
-        val notification= NotificationCompat.Builder(context,"water_notification")
-            .setContentTitle("Water Reminder")
-            .setContentText("Time to drink a glass of water")
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("navigate_to", "profile")
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = NotificationCompat.Builder(context, "water_notification")
+            .setContentTitle("Silakan Verifikasi Akun Anda")
+            .setContentText("Konfirmasi sudah dikirim ke email anda, silakan cek email anda untuk verifikasi akun")
             .setSmallIcon(R.drawable.e_waste_illustration)
-            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
 

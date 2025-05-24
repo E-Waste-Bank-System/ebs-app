@@ -24,6 +24,14 @@ sealed class Route {
     @Serializable
     object Profile
     @Serializable
+    object Location
+    @Serializable
+    object Bantuan
+    @Serializable
+    object BeriNilai
+    @Serializable
+    object Kontak
+    @Serializable
     object Settings
     @Serializable
     object Exit
