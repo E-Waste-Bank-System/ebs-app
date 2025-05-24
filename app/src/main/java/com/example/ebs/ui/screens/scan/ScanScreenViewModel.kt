@@ -33,7 +33,6 @@ class ScanScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val coroutineContext: CoroutineContext
 ) : ViewModel() {
-    // Used to set up a link between the Camera and your UI.
     private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
     val surfaceRequest: StateFlow<SurfaceRequest?> = _surfaceRequest
     private val _cameraSelector = MutableStateFlow(CameraSelector.DEFAULT_BACK_CAMERA)
@@ -44,6 +43,7 @@ class ScanScreenViewModel @Inject constructor(
             _surfaceRequest.update { newSurfaceRequest }
         }
     }
+
     private val imageCaptureUseCase = ImageCapture.Builder().build()
     val imageCapture: ImageCapture
         get() = imageCaptureUseCase
@@ -156,4 +156,5 @@ class ScanScreenViewModel @Inject constructor(
             }
         }
     }
+    // endregion
 }

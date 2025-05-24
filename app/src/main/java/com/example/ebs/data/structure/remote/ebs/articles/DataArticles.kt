@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DataArticles (
-    val data: List<Articles>,
-    val total: Int
+    val data: List<Article> = listOf(Article()),
+    val total: Int = 0
 )

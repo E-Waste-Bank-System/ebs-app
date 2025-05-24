@@ -20,13 +20,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -41,11 +41,13 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ebs.R
 import com.example.ebs.data.repositories.UserPreferencesRepository
-import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.service.WaterNotificationService
+import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.ui.components.gradients.getGredienButton
-import com.example.ebs.ui.screens.AuthViewModel
+import com.example.ebs.ui.components.inputs.AestheticButton
+import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.navigation.BotBarPage
+import com.example.ebs.ui.screens.MainViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -57,10 +59,9 @@ import kotlinx.coroutines.launch
 fun ProfileScreen(
     navController: NavController,
     userPref: UserPreferencesRepository,
-    viewModel: ProfileViewModel = hiltViewModel(),
-    viewModelAuth: AuthViewModel = hiltViewModel()
+    viewModelAuth: MainViewModel,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    viewModelAuth.initializeNavHandler(navController)
     Log.d("Route", "This is Profile")
     val postNotificationPermission = rememberPermissionState(permission = android.Manifest.permission.POST_NOTIFICATIONS)
 
@@ -75,11 +76,13 @@ fun ProfileScreen(
     }
 
     waterNotificationService.showBasicNotification()
-    val photo = viewModelAuth.authManagerState.getGoogleProfilePictureUrl()
+
+    val userInfo = viewModelAuth.localInfo
 
     BotBarPage(
         navController = navController,
-        hazeState = viewModel.hazeState
+        modifier = Modifier.padding(top = 25.dp),
+        hazeState = viewModelAuth.hazeState
     ){
         Spacer(modifier = Modifier.height(32.dp))
         Card(
@@ -105,9 +108,9 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .align(Alignment.Center)
                 ){
-                    if (photo != null) {
+                    if (userInfo?.picture != null) {
                         Image(
-                            painter = rememberAsyncImagePainter(photo),
+                            painter = rememberAsyncImagePainter(userInfo.picture),
                             contentDescription = "Account Image",
                             modifier = Modifier
                                 .size(80.dp)
@@ -115,17 +118,17 @@ fun ProfileScreen(
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        Icon(
+                        Image(
                             painter = painterResource(R.drawable.nopicture),
                             contentDescription = "Placeholder",
                             modifier = Modifier
                                 .size(80.dp)
                                 .clip(CircleShape),
-                            tint = Color.Gray
+                            contentScale = ContentScale.Crop
                         )
                     }
                     Text(
-                        text = "Aldo Nitehe Lase",
+                        text = userInfo?.name ?: "No Name",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -137,32 +140,25 @@ fun ProfileScreen(
                             }
                     )
                     Text(
-                        text = "ldao089@jimail.com | 089789462909",
+                        text = "${userInfo?.email} | ${if (userInfo?.emailVerified == "true") "Verified" else "Not Verified"}",
                         style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         color = Color.White,
+                        modifier = Modifier
+                            .clickable {
+//                                viewModelAuth.resendVerification()
+                            }
                     )
                 }
                 Box(
                     modifier = Modifier
                         .padding(8.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.LightGray)
+                        .background(Color.Gray)
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .align(Alignment.TopEnd)
                         .clickable{
-                            coroutineScope.launch {
-                                viewModel.authManagerState.signOut()
-                                    .collect{result ->
-                                        if (result is AuthResponse.Success) {
-                                            userPref.resetAuthToken()
-                                            Log.e("Udah Keluar?", "${viewModelAuth.authManagerState.isSignedIn()}")
-                                            viewModelAuth.navHandler.welcomeFromMenu()
-                                        } else {
-                                            Log.d("AuthManager", result.toString())
-                                        }
-                                    }
-                            }
+
                         }
                 ) {
                     Text(
@@ -185,12 +181,67 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
             Column {
-                ProfileItem("Lokasi",painterResource(R.drawable.map_marker))
-                ProfileItem("Bantuan",painterResource(R.drawable.help_circle))
-                ProfileItem("Beri Kami Nilai",painterResource(R.drawable.comment_alert))
-                ProfileItem("Kontak Kami",painterResource(R.drawable.account_box))
+                ProfileItem(
+                    "Lokasi",painterResource(R.drawable.map_marker),
+                    modifier = Modifier
+                        .clickable {
+                            viewModelAuth.navHandler.dialogueSetting()
+                        }
+                )
+                ProfileItem(
+                    "Bantuan",painterResource(R.drawable.help_circle),
+                    modifier = Modifier
+                        .clickable {
+                            viewModelAuth.navHandler.dialogueSetting()
+                        }
+                )
+                ProfileItem(
+                    "Beri Kami Nilai",painterResource(R.drawable.comment_alert),
+                    modifier = Modifier
+                        .clickable {
+                            viewModelAuth.navHandler.dialogueSetting()
+                        }
+                )
+                ProfileItem(
+                    "Kontak Kami",painterResource(R.drawable.account_box),
+                    modifier = Modifier
+                        .clickable {
+                            viewModelAuth.navHandler.dialogueSetting()
+                        }
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        AestheticButton (
+            onClick = {
+                coroutineScope.launch {
+                    viewModelAuth.authManagerState.signOut()
+                        .collect{result ->
+                            if (result is AuthResponse.Success) {
+                                Log.e("Udah Keluar?", "${!viewModelAuth.authManagerState.isSignedIn()}")
+                                viewModelAuth.navHandler.welcomeFromMenu()
+                            } else {
+                                Log.d("AuthManager", result.toString())
+                            }
+                        }
+                }
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(0.85f)
+                .height(48.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color.Transparent)
+                .padding(4.dp),
+            color = getGredienButton(
+                Color.Red.copy(0.25f),
+                MaterialTheme.colorScheme.secondary
+            ),
+        ){
+            TextTitleM("Log out",
+                modifier = Modifier
+                    .align(Center)
+            )
         }
     }
 }

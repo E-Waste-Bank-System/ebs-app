@@ -5,16 +5,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.ebs.ui.components.texts.TextTitleL
 import com.example.ebs.ui.components.texts.TextTitleM
+import com.example.ebs.ui.components.texts.TextTitleS
 
 @Composable
 fun CustomAlertDialogue(
@@ -28,34 +30,44 @@ fun CustomAlertDialogue(
 ){
     Card(
         modifier = modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(8.dp)
+            .padding(top = 150.dp)
+            .fillMaxWidth(0.85f),
+        colors = CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = RoundedCornerShape(50.dp)
     ) {
         Column(
             modifier = Modifier
-                .padding(32.dp)
+                .padding(vertical = 24.dp, horizontal = 32.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextTitleL(title)
-            TextTitleM(
+            TextTitleM(title)
+            TextTitleS(
                 desc,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 20.dp)
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Button(
+                    colors = ButtonDefaults.buttonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
                     onClick = { leftAct() }
                 ) {
-                    Text(left)
+                    TextTitleS(left)
                 }
                 Button(
+                    colors = ButtonDefaults.buttonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
                     onClick = { rightAct() },
                 ) {
-                    Text(right)
+                    TextTitleS(right)
                 }
             }
         }

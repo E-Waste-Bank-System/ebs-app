@@ -2,17 +2,15 @@ package com.example.ebs.ui.dialogues
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.ebs.ui.screens.AuthViewModel
+import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
 fun Exit(
     navController: NavController,
-    modifier: Modifier = Modifier,
-    viewModelAuth: AuthViewModel = hiltViewModel()
+    viewModelAuth: MainViewModel,
+    modifier: Modifier = Modifier
 ) {
-    viewModelAuth.initializeNavHandler(navController)
     CustomAlertDialogue(
         title = "Keluar Aplikasi",
         desc = "Apakah anda yakin ingin keluar dari aplikasi?",

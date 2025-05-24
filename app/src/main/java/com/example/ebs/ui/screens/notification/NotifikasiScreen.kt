@@ -27,16 +27,15 @@ import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentS
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.screens.AuthViewModel
+import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
 fun NotifikasiScreen(
     navController: NavController,
+    viewModelAuth: MainViewModel,
     modifier: Modifier = Modifier,
-    viewModel: NotifikasiViewModel = hiltViewModel(),
-    viewModelAuth: AuthViewModel = hiltViewModel(),
+    viewModel: NotifikasiViewModel = hiltViewModel()
 ) {
-    viewModelAuth.initializeNavHandler(navController)
     Log.d("Route", "This is Notifikasi")
     TopBarPage("Notifikasi",viewModelAuth.navHandler) {
         LazyColumn {

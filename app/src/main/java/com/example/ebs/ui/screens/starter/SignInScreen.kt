@@ -35,7 +35,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.data.repositories.UserPreferencesRepository
@@ -48,23 +47,21 @@ import com.example.ebs.ui.components.texts.TextContentL
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleL
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.screens.AuthViewModel
-import kotlinx.coroutines.flow.firstOrNull
+import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun SignInScreen(
     navController: NavController,
     userPref: UserPreferencesRepository,
-    viewModelAuth: AuthViewModel = hiltViewModel()
+    viewModelAuth: MainViewModel
 ) {
-    viewModelAuth.initializeNavHandler(navController)
     val checkIn = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        val token = userPref.authToken.firstOrNull()
-        viewModelAuth.updateLocalCred(token ?: "")
-        Log.e("TAG", "OneHalfCredCheck: ${viewModelAuth.localCred.take(10)}")
+//        val token = userPref.authToken.firstOrNull()
+//        viewModelAuth.updateLocalCred(token ?: "")
+//        Log.e("TAG", "OneHalfCredCheck: ${viewModelAuth.localCred.take(10)}")
         checkIn.value = true
     }
 
@@ -111,7 +108,7 @@ fun SignInScreen(
 
             AestheticButton(
                 content = {
-                    if (waitEmail.value == false) {
+                    if (!waitEmail.value) {
                         TextTitleS(
                             buildAnnotatedString {
                                 withStyle(SpanStyle(color = Color.White)) {
@@ -124,7 +121,11 @@ fun SignInScreen(
                             mod = true
                         )
                     } else {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .align(Center)
+                        )
                     }
                 },
                 onClick = {
@@ -134,12 +135,9 @@ fun SignInScreen(
                             .collect { result ->
                                 waitEmail.value = false
                                 if (result is AuthResponse.Success) {
-                                    viewModelAuth.updateLocalCred(
-                                        viewModelAuth.authManagerState.getAuthToken() ?: ""
-                                    )
-                                    Log.e("UserId", viewModelAuth.localCred)
-                                    viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
+//                                    userPref.saveAuthToken(viewModelAuth.authManagerState.getAuthToken())
                                     viewModelAuth.navHandler.menuFromSignIn()
+                                    Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelAuth.authManagerState.isSignedIn()}")
                                 } else {
                                     Log.d("AuthManager", result.toString())
                                 }
@@ -202,11 +200,7 @@ fun SignInScreen(
                                 .collect { result ->
                                     wait.value = false
                                     if (result is AuthResponse.Success) {
-                                        userPref.saveAuthToken(viewModelAuth.authManagerState.getAuthToken())
-                                        Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelAuth.authManagerState.isSignedIn()}")
                                         viewModelAuth.navHandler.menuFromSignIn()
-                                    } else {
-                                        Log.d("AuthManager", result.toString())
                                     }
                                 }
                         }

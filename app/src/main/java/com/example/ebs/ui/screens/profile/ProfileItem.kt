@@ -13,20 +13,27 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ProfileItem(item: String,icon: Painter){
+fun ProfileItem(
+    item: String,icon: Painter,
+    modifier: Modifier = Modifier
+){
     Row(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 24.dp)
     ) {
-        Icon(
-            painter = icon,
-            contentDescription = null,
-            tint = Color.LightGray,
-            modifier = Modifier
-                .padding(end = 16.dp)
-        )
-        Text(item)
+        Row (
+            modifier = modifier
+        ){
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                tint = Color.LightGray,
+                modifier = Modifier
+                    .padding(end = 16.dp)
+            )
+            Text(item)
+        }
     }
 }

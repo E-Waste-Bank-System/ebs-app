@@ -22,7 +22,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.data.repositories.UserPreferencesRepository
@@ -34,16 +33,15 @@ import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleL
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.screens.AuthViewModel
+import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(
     navController: NavController,
     userPref: UserPreferencesRepository,
-    viewModelAuth: AuthViewModel = hiltViewModel()
+    viewModelAuth: MainViewModel
 ) {
-    viewModelAuth.initializeNavHandler(navController)
     Log.d("Route", "This is SignUp")
     val coroutineScope = rememberCoroutineScope()
     val exitDialogue = remember { mutableStateOf(false) }
@@ -92,7 +90,11 @@ fun SignUpScreen(
                         mod = true
                     )
                 } else {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .align(Center)
+                    )
                 }
             },
             onClick = {
@@ -103,7 +105,7 @@ fun SignUpScreen(
                             if(result is AuthResponse.Success) {
                                 viewModelAuth.updateLocalCred(viewModelAuth.authManagerState.getAuthToken() ?: "")
                                 Log.e("UserId", viewModelAuth.localCred)
-                                viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
+//                                viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
                                 viewModelAuth.navHandler.menuFromSignUp()
                             } else {
                                 Log.d("AuthManager", result.toString())

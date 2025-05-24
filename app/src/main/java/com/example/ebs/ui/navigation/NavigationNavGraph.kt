@@ -7,56 +7,70 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import com.example.ebs.data.repositories.UserPreferencesRepository
-import com.example.ebs.ui.screens.dashboard.DashboardScreen
-import com.example.ebs.ui.screens.scan.ScanScreen
-import com.example.ebs.ui.screens.detail.WasteDetailScreen
+import com.example.ebs.data.structure.remote.ebs.articles.Article
+import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
 import com.example.ebs.ui.dialogues.ApplyRequest
 import com.example.ebs.ui.dialogues.Exit
-import com.example.ebs.ui.screens.history.DetectionListScreen
+import com.example.ebs.ui.navigation.destinations.Route
+import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.article.ArticleScreen
+import com.example.ebs.ui.screens.dashboard.DashboardScreen
+import com.example.ebs.ui.screens.detail.WasteDetailScreen
+import com.example.ebs.ui.screens.historyDetail.DetectionListScreen
 import com.example.ebs.ui.screens.notification.NotifikasiScreen
 import com.example.ebs.ui.screens.profile.ProfileScreen
+import com.example.ebs.ui.screens.scan.ScanScreen
 import com.example.ebs.ui.screens.starter.SignInScreen
 import com.example.ebs.ui.screens.starter.SignUpScreen
 import com.example.ebs.ui.screens.starter.WelcomeScreen
-import com.example.ebs.ui.navigation.destinations.Route
+import kotlinx.serialization.json.Json
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun NavGraphBuilder.mainNav(
     navController: NavController,
     userPref: UserPreferencesRepository,
+    viewModelAuth: MainViewModel,
 ){
     composable<Route.Welcome>{
-        WelcomeScreen(navController)
+        WelcomeScreen(navController,viewModelAuth)
     }
     composable<Route.SignUp> {
-        SignUpScreen(navController,userPref)
+        SignUpScreen(navController,userPref,viewModelAuth)
     }
     composable<Route.SignIn> {
-        SignInScreen(navController,userPref)
+        SignInScreen(navController,userPref,viewModelAuth)
     }
     composable<Route.Detail> { backStackEntry ->
-        val barang = backStackEntry.arguments?.getString("barang")
-        WasteDetailScreen(navController,barang.toString())
+        val data: DataDetections = backStackEntry.arguments?.getString("data")?.let {
+           Json.decodeFromString<DataDetections>(it)
+        } ?: error("Detection data missing")
+        WasteDetailScreen(navController,data,viewModelAuth)
+    }
+    composable<Route.Article> { backStackEntry ->
+        val data: Article = backStackEntry.arguments?.getString("data")?.let {
+            Json.decodeFromString<Article>(it)
+        } ?: error("Article data missing")
+        ArticleScreen(navController,data,viewModelAuth)
     }
     composable<Route.Notifikasi> {
-        NotifikasiScreen(navController)
+        NotifikasiScreen(navController,viewModelAuth)
     }
     composable<Route.Dashboard> {
-        DashboardScreen(navController, userPref)
+        DashboardScreen(navController, userPref,viewModelAuth)
     }
     composable<Route.Riwayat> {
-        DetectionListScreen(navController)
+        DetectionListScreen(navController,viewModelAuth)
     }
     composable<Route.Scan> {
-        ScanScreen(navController)
+        ScanScreen(navController,viewModelAuth)
     }
     composable<Route.Profile> {
-        ProfileScreen(navController, userPref)
+        ProfileScreen(navController, userPref,viewModelAuth)
     }
     dialog<Route.Settings> {
         ApplyRequest()
     }
     dialog<Route.Exit> {
-        Exit(navController)
+        Exit(navController,viewModelAuth)
     }
 }

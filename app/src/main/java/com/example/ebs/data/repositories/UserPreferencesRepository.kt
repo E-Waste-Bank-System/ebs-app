@@ -17,6 +17,7 @@ class UserPreferencesRepository(
 ){
     private companion object {
         val AUTH_TOKEN_KEY = stringPreferencesKey("auth_token_key")
+        val GAMBAR = stringPreferencesKey("gambar")
         const val TAG = "APP_MEMORY"
     }
 
@@ -41,5 +42,28 @@ class UserPreferencesRepository(
         }
         .map { preferences ->
             preferences[AUTH_TOKEN_KEY]
+        }
+
+    suspend fun saveGambar(token: String?) {
+        dataStore.edit { preferences ->
+            preferences[GAMBAR] = token ?: ""
+        }
+    }
+
+    suspend fun resetGambar() {
+        saveGambar(null)
+    }
+
+    val gambar: Flow<String?> = dataStore.data
+        .catch {
+            if (it is IOException) {
+                Log.e(TAG, "Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            preferences[GAMBAR]
         }
 }

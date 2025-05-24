@@ -10,7 +10,6 @@ import kotlin.coroutines.CoroutineContext
 @Module
 @InstallIn(SingletonComponent::class)
 object CoroutineModule {
-
     @Provides
     fun provideCoroutineContext(): CoroutineContext = Dispatchers.Default
 }

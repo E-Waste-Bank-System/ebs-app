@@ -3,6 +3,7 @@ package com.example.ebs.ui.screens.starter
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -30,22 +31,20 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
-import com.example.ebs.ui.screens.AuthViewModel
+import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
 fun WelcomeScreen(
     navController: NavController,
-    viewModelAuth: AuthViewModel = hiltViewModel(),
+    viewModelAuth: MainViewModel,
 ) {
-    viewModelAuth.initializeNavHandler(navController)
-    Log.d("Route", "This is Welcome")
+    Log.e("Route", "This is Welcome")
     CenterColumn(
         vArr = Arrangement.Top,
         modifier = Modifier
@@ -55,7 +54,7 @@ fun WelcomeScreen(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .padding(top = 22.dp)
+                .padding(top = 40.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth(0.90f)
                 .fillMaxHeight(0.45f)
@@ -83,13 +82,19 @@ fun WelcomeScreen(
                 .fillMaxWidth()
         ){
             TextTitleM(buildAnnotatedString {
-                append(stringResource(R.string.open))
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                withStyle(SpanStyle(color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)) {
+                    append(stringResource(R.string.open))
+                }
+                withStyle(SpanStyle(color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.primary)) {
                     append(stringResource(R.string.open_n1))
                 }
                 append(",")
             }, mod = true)
-            TextTitleM(stringResource(R.string.open_n2))
+            TextTitleM(buildAnnotatedString {
+                withStyle(SpanStyle(color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)) {
+                    append(stringResource(R.string.open_n2))
+                }
+            }, mod = true)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -102,13 +107,13 @@ fun WelcomeScreen(
             CenterRow(
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(if (isSystemInDarkTheme()) Color(0xFF102232) else MaterialTheme.colorScheme.surfaceVariant)
             ){
                 Button(
                     onClick = { viewModelAuth.navHandler.signInFromWelcome() },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.background,
+                        containerColor = if (isSystemInDarkTheme()) Color(0xFF23425A) else MaterialTheme.colorScheme.background,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     modifier = Modifier

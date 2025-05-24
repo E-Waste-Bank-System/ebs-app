@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -25,9 +27,10 @@ fun BottomNavigation(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.Companion.CenterVertically,
         modifier = modifier
+            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
             .hazeEffect(
                 state = hazeState,
-                style = HazeMaterials.thin(MaterialTheme.colorScheme.surface).copy(
+                style = HazeMaterials.thin(MaterialTheme.colorScheme.background).copy(
                     blurRadius = 10.dp
                 )
             ) {

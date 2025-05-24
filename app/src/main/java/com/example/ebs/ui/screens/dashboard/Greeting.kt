@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -26,10 +27,10 @@ import com.example.ebs.R
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextTitleL
 import com.example.ebs.ui.components.texts.TextTitleM
-import com.example.ebs.ui.navigation.NavigationHandler
+import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
-fun Greeting(navHandler: NavigationHandler, signedIn: String){
+fun Greeting(viewModelAuth: MainViewModel) {
     CenterRow(
         hArr = Arrangement.SpaceBetween,
         vAli = Alignment.Top,
@@ -38,15 +39,15 @@ fun Greeting(navHandler: NavigationHandler, signedIn: String){
             .padding(vertical = 20.dp, horizontal = 30.dp)
     ) {
         Column {
-            TextTitleL("Hallo, Aldo!")
+            TextTitleL("Hallo, ${viewModelAuth.localInfo.name?.split(" ")?.firstOrNull() ?:""}")
             TextTitleM(buildAnnotatedString {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    append("Ayo Deteksi Sampah")
+                    append(stringResource(R.string.ayo))
                 }
             }, mod = true)
             TextTitleM(buildAnnotatedString {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    append("elektronikmu.")
+                    append(stringResource(R.string.elek))
                 }
             }, mod = true)
         }
@@ -57,7 +58,7 @@ fun Greeting(navHandler: NavigationHandler, signedIn: String){
                 .size(40.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.background)
-                .clickable { navHandler.notifikasiFromMenu() }
+                .clickable { viewModelAuth.navHandler.notifikasiFromMenu() }
         ) {
             Box(
                 contentAlignment = Alignment.Center

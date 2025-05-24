@@ -1,9 +1,11 @@
 package com.example.ebs.ui.navigation
 
-import android.util.Log
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.example.ebs.data.structure.remote.ebs.articles.Article
+import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
 import com.example.ebs.ui.navigation.destinations.Route
-import com.example.ebs.utils.extractRouteName
+import kotlinx.serialization.json.Json
 
 class NavigationHandler(private val navController: NavController) {
     private fun navigateWithPopUpTo(
@@ -24,7 +26,13 @@ class NavigationHandler(private val navController: NavController) {
         }
     }
     private fun justNavigate(route: Any) {
-        navController.navigate(route)
+        navController.navigate(route){
+            popUpTo(
+                navController.graph.findStartDestination().id
+            ) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
     }
     fun back() {
         navController.popBackStack()
@@ -40,10 +48,20 @@ class NavigationHandler(private val navController: NavController) {
     val signUpFromSignIn: () -> Unit = { navigateWithPopUpTo(Route.SignUp, Route.SignIn) }
     val menuFromSignIn: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignIn) }
     val menuFromSignUp: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignUp) }
-    fun detailFromMenu (barang: String) {
-        justNavigate(Route.Detail(barang = barang))
-    }
     val notifikasiFromMenu: () -> Unit = { justNavigate(Route.Notifikasi) }
+    fun detailFromMenu (detection: DataDetections) {
+        val json = Json.encodeToString(DataDetections.serializer(), detection)
+        justNavigate(Route.Detail(data = json))
+    }
+    fun scanFromDetail (detection: DataDetections) {
+        val json = Json.encodeToString(DataDetections.serializer(), detection)
+        navigateWithPopUpTo(Route.Scan, Route.Detail(data = json))
+    }
+    fun articleFromMenu (article: Article) {
+        val json = Json.encodeToString(Article.serializer(), article)
+        justNavigate(Route.Article(data = json))
+    }
+    val riwayat: () -> Unit = { justNavigate(Route.Riwayat) }
     val dialogueSetting: () -> Unit = { justNavigate(Route.Settings) }
     val exitDialogue: () -> Unit = { justNavigate(Route.Exit) }
 }

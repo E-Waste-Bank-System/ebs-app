@@ -22,4 +22,9 @@
     <string name="email">Email</string>
     <string name="notel">No. Telepon</string>
     <string name="sudahPunyaAkun">"Sudah punya akun? "</string>
+    <string name="history">Terakhir</string>
+    <string name="seeall">Lihat Semua</string>
+    <string name="noTrending">Belum ada yang dideteksi.</string>
+    <string name="ayo">Ayo Deteksi Sampah</string>
+    <string name="elek">"elektronikmu. "</string>
 </resources>
