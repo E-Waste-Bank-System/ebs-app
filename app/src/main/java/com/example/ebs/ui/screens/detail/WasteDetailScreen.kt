@@ -1,11 +1,18 @@
 package com.example.ebs.ui.screens.detail
 
 import android.util.Log
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,13 +20,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -28,17 +38,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.Top
-import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
@@ -67,7 +77,6 @@ data class ScanResult(
 
 @Composable
 fun WasteDetailScreen(
-    navController: NavController,
     data: DataDetections = DataDetections(),
     viewModelAuth: MainViewModel,
     viewModel: WasteDetailViewModel = hiltViewModel()
@@ -89,6 +98,8 @@ fun WasteDetailScreen(
         )
     }) }
 
+    val slideReminder = remember { mutableStateOf( listScan.size > 1) }
+
     TopBarPage(
         "Result",
         viewModelAuth.navHandler
@@ -104,167 +115,208 @@ fun WasteDetailScreen(
                 riskLvl = 5,
                 detectionSource = ""
             )) {} else {
-            LazyColumn {
+            val listState = rememberLazyListState()
+            val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+            LazyRow(
+                state = listState,
+                flingBehavior = flingBehavior
+            ) {
                 items(
                     listScan.size,
                     key = { hist -> listScan[hist].description },
                 ) { item ->
-                    Box(
+                    CenterColumn(
+                        hAli = Alignment.Start,
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillParentMaxWidth(0.85f)
                     ) {
                         CenterColumn(
                             hAli = Alignment.Start,
                             modifier = Modifier
-                                .align(TopCenter)
-                                .fillMaxWidth(0.85f)
+                                .fillMaxWidth()
+                                .wrapContentSize()
+                                .padding(bottom = 15.dp)
+                                .border(
+                                    BorderStroke(
+                                        2.dp,
+                                        getGredienButton(
+                                            Color(0xFFD3A6E0),
+                                            Color(0xFF10A2D1)
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
                         ) {
-                            CenterColumn(
-                                hAli = Alignment.Start,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentSize()
-                                    .border(
-                                        BorderStroke(
-                                            1.dp,
-                                            getGredienButton(Color(0xFFD3A6E0), Color(0xFF10A2D1))
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                            ) {
-                                if (listScan[item].imageUrl == "") {
-                                    Image(
-                                        painterResource(R.drawable.nopicture),
-                                        contentDescription = "Icon",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(100.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
-                                } else {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(listScan[item].imageUrl),
-                                        contentDescription = "Account Image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .padding(bottom = 25.dp, top = 15.dp)
-                                            .width(300.dp)
-                                            .height(200.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
-                                }
-                            }
-                            TextTitleM(listScan[item].category)
-                            TextContentL(
-                                listScan[item].description,
-                                textAlign = TextAlign.Start
-                            )
-                            Spacer(Modifier.padding(5.dp))
-                            CenterRow {
-                                TextTitleS("Saran dan Tindakan dari AI")
+                            if (listScan[item].imageUrl == "") {
                                 Image(
-                                    painter = painterResource(R.drawable.ai),
-                                    contentDescription = "ai",
+                                    painterResource(R.drawable.nopicture),
+                                    contentDescription = "Icon",
+                                    contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .size(30.dp)
-                                        .padding(5.dp)
+                                        .size(100.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
+                            } else {
+                                Image(
+                                    painter = rememberAsyncImagePainter(listScan[item].imageUrl),
+                                    contentDescription = "Account Image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .padding(15.dp)
+                                        .width(300.dp)
+                                        .height(200.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                        .clip(RoundedCornerShape(8.dp))
                                 )
                             }
-                            listScan[item].suggestion.forEach { suggestionItem ->
-                                CenterRow {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(7.5.dp)
-                                            .size(5.dp)
-                                            .background(
-                                                Color.Gray,
-                                                shape = CircleShape
-                                            )
-                                            .align(Top)
-                                    )
-                                    TextContentM(
-                                        "$suggestionItem",
-                                        modifier = Modifier
-                                            .align(Top),
-                                        textAlign = TextAlign.Start
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.padding(10.dp))
-                            CenterColumn(
-                                hAli = Alignment.Start,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                    .border(
-                                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                            ) {
-                                TextTitleS(
-                                    "Prediksi Kerusakan E-waste",
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                                LinearProgressIndicator(
-                                    progress = {
-                                        listScan[item].riskLvl.toFloat() / 10
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp)
-                                        .padding(horizontal = 10.dp),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                CenterRow(
-                                    hArr = Arrangement.SpaceBetween,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(10.dp)
-                                ) {
-                                    TextContentM("Rendah")
-                                    TextContentM("Tinggi")
-                                }
-                            }
-                            Spacer(Modifier.padding(10.dp))
-                            CenterColumn(
-                                hAli = Alignment.Start,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentSize()
-                                    .border(
-                                        BorderStroke(
-                                            1.dp,
-                                            getGredienButton(Color(0xFFD3A6E0), Color(0xFF10A2D1))
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                            ) {
-                                TextTitleS(
-                                    "Total Estimasi Harga",
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                                CenterRow(
-                                    hArr = Arrangement.SpaceBetween,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(10.dp)
-                                ) {
-                                    TextContentL(listScan[item].category)
-                                    TextContentL(listScan[item].total.toString())
-                                    TextContentL(
-                                        "Rp. " + NumberFormat.getInstance()
-                                            .format(listScan[item].regressionResult * listScan[item].total)
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.padding(50.dp))
                         }
+                        TextTitleM(
+                            listScan[item].category,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                        TextContentM(
+                            listScan[item].description,
+                            textAlign = TextAlign.Start
+                        )
+                        Spacer(Modifier.padding(5.dp))
+                        CenterRow {
+                            TextTitleS("Saran dan Tindakan dari AI")
+                            Image(
+                                painter = painterResource(R.drawable.ai),
+                                contentDescription = "ai",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .padding(5.dp)
+                            )
+                        }
+                        listScan[item].suggestion.forEach { suggestionItem ->
+                            CenterRow {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(7.5.dp)
+                                        .size(5.dp)
+                                        .background(
+                                            Color.Gray,
+                                            shape = CircleShape
+                                        )
+                                        .align(Top)
+                                )
+                                TextContentM(
+                                    "$suggestionItem",
+                                    modifier = Modifier
+                                        .align(Top),
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                        Spacer(Modifier.padding(10.dp))
+                        CenterColumn(
+                            hAli = Alignment.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                .border(
+                                    BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            TextTitleS(
+                                "Prediksi Kerusakan E-waste",
+                                modifier = Modifier.padding(10.dp)
+                            )
+                            LinearProgressIndicator(
+                                progress = {
+                                    listScan[item].riskLvl.toFloat() / 10
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .padding(horizontal = 10.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            CenterRow(
+                                hArr = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                            ) {
+                                TextContentM("Rendah")
+                                TextContentM("Tinggi")
+                            }
+                        }
+                        Spacer(Modifier.padding(10.dp))
+                        CenterColumn(
+                            hAli = Alignment.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentSize()
+                                .border(
+                                    BorderStroke(
+                                        1.dp,
+                                        getGredienButton(
+                                            Color(0xFFD3A6E0),
+                                            Color(0xFF10A2D1)
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            TextTitleS(
+                                "Total Estimasi Harga",
+                                modifier = Modifier.padding(10.dp)
+                            )
+                            CenterRow(
+                                hArr = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                            ) {
+                                TextContentL(listScan[item].category)
+                                TextContentL(listScan[item].total.toString())
+                                TextContentL(
+                                    "Rp. " + NumberFormat.getInstance()
+                                        .format(listScan[item].regressionResult * listScan[item].total)
+                                )
+                            }
+                        }
+                        Spacer(Modifier.padding(50.dp))
                     }
                 }
             }
+        }
+    }
+    if (slideReminder.value) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    slideReminder.value = !slideReminder.value
+                }
+        ) {
+            val infiniteTransition = rememberInfiniteTransition(label = "slide")
+            val offsetX by infiniteTransition.animateFloat(
+                initialValue = -20f,
+                targetValue = 0f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 500, easing = LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ), label = "slideX"
+            )
+
+            Icon(
+                painter = painterResource(R.drawable.chevron_left),
+                contentDescription = "Back",
+                modifier = Modifier
+                    .padding(10.dp)
+                    .size(30.dp)
+                    .offset { IntOffset(offsetX.dp.roundToPx(), 0) }
+                    .align(CenterEnd)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+            )
         }
     }
     if (!reminder.value) {

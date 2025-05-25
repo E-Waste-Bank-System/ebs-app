@@ -28,6 +28,7 @@ import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleS
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,10 +43,10 @@ fun Sorotan(
             modifier = Modifier
                 .padding(bottom = 15.dp, top = 10.dp))
     }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(bottom = 100.dp)
     ) {
         when {
             articles.isEmpty() -> {
@@ -128,8 +129,8 @@ fun Sorotan(
 //                                            )
 //                                    )
                                     TextContentM(
-                                        article.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString().split("-").reversed().joinToString("/"),
-                                        modifier = Modifier.height(15.dp)
+                                        article.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                                        modifier = Modifier.height(18.dp)
                                     )
                                 }
                             }

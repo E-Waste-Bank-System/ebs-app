@@ -58,12 +58,12 @@ fun BeriNilai() {
             TextTitleS(
                 buildAnnotatedString {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    append("Link Sementara")
+                    append("Feedback Link")
                 }
             }, mod = true,
                 modifier = Modifier
                     .clickable {
-                        uriHandler.openUri("https://www.youtube.com/watch?v=-uyIzKIw0xY")
+                        uriHandler.openUri("https://forms.gle/eu7Kpv1jw47oQGWa9")
                     }
             )
         }

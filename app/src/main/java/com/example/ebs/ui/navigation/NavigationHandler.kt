@@ -1,5 +1,6 @@
 package com.example.ebs.ui.navigation
 
+import android.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.ebs.data.structure.remote.ebs.articles.Article
@@ -23,6 +24,21 @@ class NavigationHandler(private val navController: NavController) {
             }
             this.launchSingleTop = launchSingleTop
             this.restoreState = restoreState
+        }
+    }
+    private fun navigateWithPopUpToAndForgor(
+        route: Any,
+        popUpToRoute: Any,
+        inclusive: Boolean = true,
+        saveState: Boolean = true,
+        launchSingleTop: Boolean = true,
+        restoreState: Boolean = true
+    ) {
+        navController.navigate(route) {
+            popUpTo(popUpToRoute) {
+                this.inclusive = inclusive
+            }
+            this.launchSingleTop = launchSingleTop
         }
     }
     private fun justNavigate(route: Any) {
@@ -54,21 +70,24 @@ class NavigationHandler(private val navController: NavController) {
     val notifikasiFromMenu: () -> Unit = { justNavigate(Route.Notifikasi) }
     fun detailFromMenu (detection: DataDetections) {
         val json = Json.encodeToString(DataDetections.serializer(), detection)
+        Log.e("NavigationHandler", "detailFromMenu: $json")
         justNavigate(Route.Detail(data = json))
     }
     fun scanFromDetail (detection: DataDetections) {
         val json = Json.encodeToString(DataDetections.serializer(), detection)
-        navigateWithPopUpTo(Route.Scan, Route.Detail(data = json))
+        navigateWithPopUpToAndForgor(Route.Scan, Route.Detail(data = json))
     }
     fun articleFromMenu (article: Article) {
         val json = Json.encodeToString(Article.serializer(), article)
         justNavigate(Route.Article(data = json))
     }
+    val dashboard: () -> Unit = { justNavigate(Route.Dashboard) }
     val riwayat: () -> Unit = { justNavigate(Route.Riwayat) }
     val lokasi: () -> Unit = { dialogueNav(Route.Location) }
     val bantuan: () -> Unit = { dialogueNav(Route.Bantuan) }
     val beriNilai: () -> Unit = { dialogueNav(Route.BeriNilai) }
     val kontak: () -> Unit = { dialogueNav(Route.Kontak) }
+    val ubah: () -> Unit = { dialogueNav(Route.Ubah) }
     val dialogueSetting: () -> Unit = { justNavigate(Route.Settings) }
     val exitDialogue: () -> Unit = { justNavigate(Route.Exit) }
 }

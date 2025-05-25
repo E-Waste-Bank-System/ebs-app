@@ -43,6 +43,7 @@ import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,10 +63,20 @@ fun DashboardScreen(
             coroutineScope {
                 val refreshJob = async { viewModelAuth.refresh() }
                 val userDataJob = async { viewModelAuth.getUserData() }
+                val localDataJob = async {
+                    if(userPref.name.first() != null && userPref.name.first() != "") {
+                        viewModelAuth.updateUserInfo(
+                            viewModelAuth.localInfo.copy(
+                                name = userPref.name.first(),
+                            )
+                        )
+                    }
+                }
                 val delayJob = async { delay(2000) }
                 val checkJob = async { viewModelAuth.authManagerState.isSignedIn() }
                 refreshJob.await()
                 userDataJob.await()
+                localDataJob.await()
                 delayJob.await()
                 check.value = checkJob.await()
                 delay(1000)
@@ -79,8 +90,8 @@ fun DashboardScreen(
         }
     }
 
-    Log.d("Route", "This is Dashboard")
-    if (loadStatus.value) {
+    Log.d("Route", "This is Dashboard first? ${viewModelAuth.firstOpen}")
+    if (loadStatus.value && !viewModelAuth.firstOpen) {
         val exitDialogue = remember { mutableStateOf(false) }
 
         BackHandler { exitDialogue.value = true }

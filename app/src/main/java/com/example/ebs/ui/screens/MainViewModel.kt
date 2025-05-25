@@ -62,10 +62,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateLocalCred(token: String) {
-        localCred = token.toString()
+        localCred = token
     }
 
     fun getUserData(){
+        Log.e("MainViewModel", "getUserData called")
         updateUserInfo(authManagerState.getGoogleProfileInfo() ?: GoogleProfileFields())
     }
 
@@ -94,8 +95,12 @@ class MainViewModel @Inject constructor(
         _upImage.value = result
     }
 
+    fun resetUpImage() {
+        _upImage.value = DataDetections()
+    }
 
-    private fun updateUserInfo(info: GoogleProfileFields) {
+
+    fun updateUserInfo(info: GoogleProfileFields) {
         localInfo = info
     }
 

@@ -30,7 +30,6 @@ fun CustomAlertDialogue(
 ){
     Card(
         modifier = modifier
-            .padding(top = 150.dp)
             .fillMaxWidth(0.85f),
         colors = CardDefaults.cardColors().copy(
             containerColor = MaterialTheme.colorScheme.surface

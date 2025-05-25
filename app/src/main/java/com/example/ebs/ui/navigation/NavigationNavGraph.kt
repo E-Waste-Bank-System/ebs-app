@@ -15,6 +15,7 @@ import com.example.ebs.ui.dialogues.BeriNilai
 import com.example.ebs.ui.dialogues.Exit
 import com.example.ebs.ui.dialogues.Kontak
 import com.example.ebs.ui.dialogues.Lokasi
+import com.example.ebs.ui.dialogues.Ubah
 import com.example.ebs.ui.navigation.destinations.Route
 import com.example.ebs.ui.screens.MainViewModel
 import com.example.ebs.ui.screens.article.ArticleScreen
@@ -49,7 +50,7 @@ fun NavGraphBuilder.mainNav(
         val data: DataDetections = backStackEntry.arguments?.getString("data")?.let {
            Json.decodeFromString<DataDetections>(it)
         } ?: error("Detection data missing")
-        WasteDetailScreen(navController,data,viewModelAuth)
+        WasteDetailScreen(data,viewModelAuth)
     }
     composable<Route.Article> { backStackEntry ->
         val data: Article = backStackEntry.arguments?.getString("data")?.let {
@@ -83,6 +84,9 @@ fun NavGraphBuilder.mainNav(
     }
     dialog<Route.Kontak> {
         Kontak()
+    }
+    dialog<Route.Ubah> {
+        Ubah(viewModelAuth,userPref)
     }
     dialog<Route.Settings> {
         ApplyRequest()

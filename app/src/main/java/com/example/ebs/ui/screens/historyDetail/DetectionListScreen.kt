@@ -51,6 +51,7 @@ import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.screens.MainViewModel
 import com.example.ebs.ui.screens.dashboard.CardDashboard
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +69,8 @@ fun DetectionListScreen(
 
     BotBarPage(
         navController = navController,
-        modifier = Modifier.padding(top = 50.dp),
+        modifier = Modifier
+            .padding(top = 50.dp, bottom = 100.dp),
         hazeState = viewModelAuth.hazeState
     ) {
         Box(
@@ -155,8 +157,10 @@ fun DetectionListScreen(
                                             )
                                     ) {
                                         Column {
-                                            TextTitleS(history[item].createdAt.toLocalDateTime(
-                                                TimeZone.currentSystemDefault()).date.toString().split("-").reversed().joinToString("/"))
+                                            TextTitleS(
+                                                history[item].createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                                                modifier = Modifier.height(22.dp)
+                                            )
                                             if(history[item].objects.isEmpty()) {
                                                 TextTitleS("Tidak ada yang terdeteksi")
                                             } else {

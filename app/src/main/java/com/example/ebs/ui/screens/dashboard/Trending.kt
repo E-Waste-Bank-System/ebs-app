@@ -33,6 +33,7 @@ import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleS
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
@@ -134,8 +135,10 @@ fun Trending(
                                     .padding(top = 10.dp, bottom = 10.dp, end = 5.dp, start = 10.dp)
                             ) {
                                 Column {
-                                    TextContentM(history[item].createdAt.toLocalDateTime(
-                                        TimeZone.currentSystemDefault()).date.toString().split("-").reversed().joinToString("/"))
+                                    TextContentM(
+                                        history[item].createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                                        modifier = Modifier.height(20.dp)
+                                    )
                                     if(history[item].objects.isEmpty()) {
                                         TextTitleS(
                                             "Tidak ada yang terdeteksi",

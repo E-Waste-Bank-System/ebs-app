@@ -32,6 +32,8 @@ sealed class Route {
     @Serializable
     object Kontak
     @Serializable
+    object Ubah
+    @Serializable
     object Settings
     @Serializable
     object Exit

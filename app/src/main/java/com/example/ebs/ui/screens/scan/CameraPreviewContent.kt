@@ -96,7 +96,13 @@ internal fun CameraPreviewContent(
     val scope = rememberCoroutineScope()
     val wait = remember { mutableStateOf(false) }
 
-    val userInfo = viewModelAuth.localInfo
+    val userInfo = try {
+        viewModelAuth.localInfo
+    } catch (e: UninitializedPropertyAccessException) {
+        viewModelAuth.firstOpen = true
+        viewModelAuth.navHandler.dashboard()
+        return
+    }
 
     val reminder = rememberSaveable { mutableStateOf(false) }
 
@@ -308,8 +314,9 @@ internal fun CameraPreviewContent(
                                                         withContext(Dispatchers.IO) {
                                                             viewModelAuth.uploadImage(photoFile.toString())
                                                         }
-                                                        val result = upImage
+                                                        val result = viewModelAuth.upImage.value
                                                         if (result != DataDetections()) {
+                                                            viewModelAuth.resetUpImage()
                                                             viewModelAuth.navHandler.detailFromMenu(
                                                                 result
                                                             )
