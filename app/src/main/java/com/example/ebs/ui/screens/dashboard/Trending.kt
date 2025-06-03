@@ -24,6 +24,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
+import com.example.ebs.data.structure.remote.ebs.detections.DataNewDetection
 import com.example.ebs.data.structure.remote.ebs.detections.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.Histories
 import com.example.ebs.ui.components.structures.CenterColumn
@@ -109,20 +110,22 @@ fun Trending(
                                     viewModelAuth.navHandler.detailFromMenu(
                                         DataDetections(
                                             "",
-                                            history[item].objects.firstOrNull()?.scanId ?: "",
-                                            history[item].objects.map { it ->
-                                                Detection(
-                                                    it.scanId,
-                                                    it.imageUrl,
-                                                    it.category,
-                                                    it.confidence,
-                                                    it.regressionResult,
-                                                    it.description,
-                                                    it.suggestion,
-                                                    it.riskLvl,
-                                                    it.detectionSource
-                                                )
-                                            }
+                                            DataNewDetection(
+                                                history[item].objects.firstOrNull()?.scanId ?: "",
+                                                history[item].objects.map { it ->
+                                                    Detection(
+                                                        it.scanId,
+                                                        it.imageUrl,
+                                                        it.category,
+                                                        it.confidence,
+                                                        it.regressionResult,
+                                                        it.description,
+                                                        it.suggestion,
+                                                        it.riskLvl,
+                                                        it.detectionSource
+                                                    )
+                                                }
+                                            )
                                         )
                                     )
                                 }

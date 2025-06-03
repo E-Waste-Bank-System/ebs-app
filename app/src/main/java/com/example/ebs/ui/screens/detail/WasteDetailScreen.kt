@@ -27,8 +27,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -85,7 +87,7 @@ fun WasteDetailScreen(
 
     val reminder = rememberSaveable { mutableStateOf(false) }
 
-    val listScan by remember { mutableStateOf(data.predictions.groupBy { it.category }.map {
+    val listScan by remember { mutableStateOf(data.data.predictions.groupBy { it.category }.map {
         val first = it.value.firstOrNull()
         ScanResult(
             category = first?.category ?: "",
@@ -104,7 +106,7 @@ fun WasteDetailScreen(
         "Result",
         viewModelAuth.navHandler
     ){
-        if(data.predictions.first() == Detection(
+        if(data.data.predictions.first() == Detection(
                 id = "",
                 imageUrl = "",
                 category = "MANA E-WASTENYA",
@@ -129,6 +131,10 @@ fun WasteDetailScreen(
                         hAli = Alignment.Start,
                         modifier = Modifier
                             .fillParentMaxWidth(0.85f)
+                            .padding(horizontal = 10.dp)
+                            .verticalScroll(
+                                rememberScrollState()
+                            )
                     ) {
                         CenterColumn(
                             hAli = Alignment.Start,
@@ -174,7 +180,8 @@ fun WasteDetailScreen(
                         TextTitleM(
                             listScan[item].category,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Start
                         )
                         TextContentM(
                             listScan[item].description,
@@ -320,7 +327,7 @@ fun WasteDetailScreen(
         }
     }
     if (!reminder.value) {
-        if(data.predictions.first() == Detection(
+        if(data.data.predictions.first() == Detection(
                 id = "",
                 imageUrl = "",
                 category = "MANA E-WASTENYA",

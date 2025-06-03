@@ -10,6 +10,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,6 +43,7 @@ import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.book.DataTest
 import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
+import com.example.ebs.data.structure.remote.ebs.detections.DataNewDetection
 import com.example.ebs.data.structure.remote.ebs.detections.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.Histories
 import com.example.ebs.ui.components.structures.CenterColumn
@@ -70,7 +72,7 @@ fun DetectionListScreen(
     BotBarPage(
         navController = navController,
         modifier = Modifier
-            .padding(top = 50.dp, bottom = 100.dp),
+            .padding(top = 50.dp),
         hazeState = viewModelAuth.hazeState
     ) {
         Box(
@@ -184,20 +186,22 @@ fun DetectionListScreen(
                                                 viewModelAuth.navHandler.detailFromMenu(
                                                     DataDetections(
                                                         "",
-                                                        history[item].objects.firstOrNull()?.scanId ?: "",
-                                                        history[item].objects.map { it ->
-                                                            Detection(
-                                                                it.scanId,
-                                                                it.imageUrl,
-                                                                it.category,
-                                                                it.confidence,
-                                                                it.regressionResult,
-                                                                it.description,
-                                                                it.suggestion,
-                                                                it.riskLvl,
-                                                                it.detectionSource
-                                                            )
-                                                        }
+                                                        DataNewDetection(
+                                                            history[item].objects.firstOrNull()?.scanId ?: "",
+                                                            history[item].objects.map { it ->
+                                                                Detection(
+                                                                    it.scanId,
+                                                                    it.imageUrl,
+                                                                    it.category,
+                                                                    it.confidence,
+                                                                    it.regressionResult,
+                                                                    it.description,
+                                                                    it.suggestion,
+                                                                    it.riskLvl,
+                                                                    it.detectionSource
+                                                                )
+                                                            }
+                                                        )
                                                     )
                                                 )
                                             }
@@ -213,6 +217,9 @@ fun DetectionListScreen(
                                             }
                                         }
                                     }
+                                }
+                                if(item == history.size - 1) {
+                                    Spacer(modifier = Modifier.height(100.dp))
                                 }
                             }
                         }
