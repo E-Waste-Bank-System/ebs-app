@@ -334,7 +334,7 @@ internal fun CameraPreviewContent(
                                                         )
                                                         Toast.makeText(
                                                             context,
-                                                            "Error: ${e.localizedMessage}",
+                                                            if (e.localizedMessage == "rememberCoroutineScope left the composition") "Ups?! Gak jadi..." else e.localizedMessage,
                                                             Toast.LENGTH_SHORT
                                                         ).show()
                                                     } finally {
