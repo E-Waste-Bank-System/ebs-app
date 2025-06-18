@@ -33,7 +33,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -137,11 +140,19 @@ fun ProfileScreen(
                         )
                     }
                     TextTitleM(
-                        text = userInfo.name ?: "No Name",
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = Color.White)) {
+                                append(userInfo.name ?: "No Name")
+                            }
+                        },
                         textAlign = TextAlign.Center
                     )
                     TextContentM(
-                        text = "${userInfo.email} | ${if (userInfo.emailVerified == "true") "Verified" else "Not Verified"}",
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = Color.White)) {
+                                append("${userInfo.email} | ${if (userInfo.emailVerified == "true") "Verified" else "Not Verified"}")
+                            }
+                        },
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .clickable {
@@ -153,7 +164,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .padding(12.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.Gray)
+                        .background(Color.LightGray)
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .align(Alignment.TopEnd)
                         .clickable {
@@ -161,7 +172,11 @@ fun ProfileScreen(
                         }
                 ) {
                     TextContentM(
-                        text = "Ubah",
+                        buildAnnotatedString {
+                            withStyle(SpanStyle(color = Color.White)) {
+                                append("Ubah")
+                            }
+                        },
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -220,7 +235,7 @@ fun ProfileScreen(
                                 userPref.resetName()
                                 viewModelAuth.navHandler.welcomeFromMenu()
                             } else {
-                                Log.d("AuthManager", result.toString())
+                                Log.e("AuthManager", result.toString())
                             }
                         }
                 }
@@ -236,7 +251,12 @@ fun ProfileScreen(
                 MaterialTheme.colorScheme.secondary
             ),
         ){
-            TextTitleM("Log out",
+            TextTitleM(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = Color.White)) {
+                        append("Log out")
+                    }
+                },
                 modifier = Modifier
                     .align(Center)
             )

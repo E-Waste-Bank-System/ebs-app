@@ -94,7 +94,7 @@ fun SignInScreen(
                     append(stringResource(R.string.helloSignIn))
                 }
                 append(stringResource(R.string.temanSignIn))
-            }, mod = true)
+            })
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -124,8 +124,7 @@ fun SignInScreen(
                             },
                             modifier = Modifier
                                 .padding(16.dp)
-                                .align(Center),
-                            mod = true
+                                .align(Center)
                         )
                     } else {
                         CircularProgressIndicator(
@@ -146,7 +145,7 @@ fun SignInScreen(
                                     viewModelAuth.navHandler.menuFromSignIn()
                                     Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelAuth.authManagerState.isSignedIn()}")
                                 } else {
-                                    Log.d("AuthManager", result.toString())
+                                    Log.e("AuthManager", result.toString())
                                 }
                             }
                     }
@@ -208,6 +207,8 @@ fun SignInScreen(
                                     wait.value = false
                                     if (result is AuthResponse.Success) {
                                         viewModelAuth.navHandler.menuFromSignIn()
+                                    } else {
+                                        Log.e("AuthManager", result.toString())
                                     }
                                 }
                         }
@@ -242,7 +243,6 @@ fun SignInScreen(
                             append(stringResource(R.string.daftar))
                         }
                     },
-                    mod = true,
                     modifier = Modifier
                         .clickable { viewModelAuth.navHandler.signUpFromSignIn() }
                 )

@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.data.structure.remote.ebs.articles.Article
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.dialogues.ApplyRequest
 import com.example.ebs.ui.dialogues.Bantuan
 import com.example.ebs.ui.dialogues.BeriNilai
@@ -47,10 +47,11 @@ fun NavGraphBuilder.mainNav(
         SignInScreen(navController,userPref,viewModelAuth,navigateTo)
     }
     composable<Route.Detail> { backStackEntry ->
-        val data: DataDetections = backStackEntry.arguments?.getString("data")?.let {
-           Json.decodeFromString<DataDetections>(it)
+        val data: ScanResponse = backStackEntry.arguments?.getString("data")?.let {
+           Json.decodeFromString<ScanResponse>(it)
         } ?: error("Detection data missing")
-        WasteDetailScreen(data,viewModelAuth)
+        val img: String? = backStackEntry.arguments?.getString("img")
+        WasteDetailScreen(data,img,viewModelAuth)
     }
     composable<Route.Article> { backStackEntry ->
         val data: Article = backStackEntry.arguments?.getString("data")?.let {
@@ -74,22 +75,22 @@ fun NavGraphBuilder.mainNav(
         ProfileScreen(navController, userPref,viewModelAuth)
     }
     dialog<Route.Location> {
-        Lokasi()
+        Lokasi(navController)
     }
     dialog<Route.Bantuan> {
-        Bantuan()
+        Bantuan(navController)
     }
     dialog<Route.BeriNilai> {
-        BeriNilai()
+        BeriNilai(navController)
     }
     dialog<Route.Kontak> {
-        Kontak()
+        Kontak(navController)
     }
     dialog<Route.Ubah> {
         Ubah(viewModelAuth,userPref)
     }
     dialog<Route.Settings> {
-        ApplyRequest()
+        ApplyRequest(navController)
     }
     dialog<Route.Exit> {
         Exit(navController,viewModelAuth)

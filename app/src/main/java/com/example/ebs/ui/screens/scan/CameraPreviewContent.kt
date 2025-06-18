@@ -65,7 +65,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.ebs.R
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
@@ -131,8 +131,8 @@ internal fun CameraPreviewContent(
                             viewModelAuth.uploadImage(tempFile.absolutePath)
                         }
                         val result = upImage
-                        if (result != DataDetections()) {
-                            viewModelAuth.navHandler.detailFromMenu(result)
+                        if (result != ScanResponse()) {
+                            viewModelAuth.navHandler.detailFromMenu(result, "")
                         } else {
                             Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
                         }
@@ -277,8 +277,7 @@ internal fun CameraPreviewContent(
                                         context.cacheDir,
                                         "captured_image_${System.currentTimeMillis()}.png"
                                     )
-                                    val outputOptions =
-                                        ImageCapture.OutputFileOptions.Builder(photoFile).build()
+                                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
                                     imageCapture.takePicture(
                                         outputOptions,
                                         ContextCompat.getMainExecutor(context),
@@ -315,11 +314,10 @@ internal fun CameraPreviewContent(
                                                             viewModelAuth.uploadImage(photoFile.toString())
                                                         }
                                                         val result = viewModelAuth.upImage.value
-                                                        if (result != DataDetections()) {
+                                                        if (result != ScanResponse()) {
                                                             viewModelAuth.resetUpImage()
-                                                            viewModelAuth.navHandler.detailFromMenu(
-                                                                result
-                                                            )
+                                                            viewModelAuth.navHandler.detailFromMenu(result, result.imgUrl)
+                                                            Log.e("CameraPreviewContent", "Image uploaded successfully: $result")
                                                         } else {
                                                             Toast.makeText(
                                                                 context,

@@ -8,8 +8,8 @@ import androidx.navigation.NavController
 import com.example.ebs.data.repositories.remote.ebsApi.EBSRepository
 import com.example.ebs.data.structure.GoogleProfileFields
 import com.example.ebs.data.structure.remote.ebs.articles.Article
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
-import com.example.ebs.data.structure.remote.ebs.detections.Histories
+import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.service.auth.AuthManager
 import com.example.ebs.service.database.DatabaseManager
 import com.example.ebs.ui.navigation.NavigationHandler
@@ -49,13 +49,12 @@ class MainViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-    private val _history = MutableStateFlow(listOf(Histories()))
-    val history: StateFlow<List<Histories>> = _history
+    private val _history = MutableStateFlow(listOf(Detection()))
+    val history: StateFlow<List<Detection>> = _history
     private val _articles = MutableStateFlow(listOf(Article()))
     val articles: StateFlow<List<Article>> = _articles
-
-    private val _upImage = MutableStateFlow(DataDetections())
-    val upImage: StateFlow<DataDetections> = _upImage
+    private val _upImage = MutableStateFlow(ScanResponse())
+    val upImage: StateFlow<ScanResponse> = _upImage
 
     fun initializeNavHandler(navController: NavController) {
         navHandler = NavigationHandler(navController)
@@ -68,6 +67,14 @@ class MainViewModel @Inject constructor(
     fun getUserData(){
         Log.e("MainViewModel", "getUserData called")
         updateUserInfo(authManagerState.getGoogleProfileInfo() ?: GoogleProfileFields())
+    }
+
+    fun resetUpImage() {
+        _upImage.value = ScanResponse()
+    }
+
+    fun updateUserInfo(info: GoogleProfileFields) {
+        localInfo = info
     }
 
     fun refresh() {
@@ -88,22 +95,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun uploadImage(filePath: String) {
-        val userId = authManagerState.getUserId()
-        val token = ebsRepositoryState.loginUser(userId ?: "")
-        val result = ebsRepositoryState.uploadImage(userId ?: "", filePath, token)
-        _upImage.value = result
-    }
-
-    fun resetUpImage() {
-        _upImage.value = DataDetections()
-    }
-
-
-    fun updateUserInfo(info: GoogleProfileFields) {
-        localInfo = info
-    }
-
     private fun loadArticles() {
         viewModelScope.launch {
             var result = _articles.value
@@ -120,13 +111,29 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             var result = _history.value
             try {
-                val userId = authManagerState.getUserId()
-                val token = ebsRepositoryState.loginUser(userId ?: "")
-                result = ebsRepositoryState.getHistory(token, userId ?: "")
+                val userId = authManagerState.getUserId() ?: ""
+                val token = ebsRepositoryState.loginUser(userId)
+                val listHistory = ebsRepositoryState.getHistory(token)
+                result = listHistory.data.map({
+                    ebsRepositoryState.getDetection(token, it.id)
+                })
             } catch (e: Exception) {
                 Log.e("Scans", "Error loading histories: ${e.message}")
             }
-            _history.value = result.ifEmpty { listOf(Histories()) }
+            _history.value = result
         }
+    }
+
+    suspend fun uploadImage(filePath: String) {
+        val userId = authManagerState.getUserId()
+        val token = ebsRepositoryState.loginUser(userId ?: "")
+        val result = ebsRepositoryState.uploadImage(userId ?: "", filePath, token)
+        _upImage.value = result
+    }
+
+    suspend fun pollResult(id: String): Detection {
+        val userId = authManagerState.getUserId() ?: ""
+        val token = ebsRepositoryState.loginUser(userId)
+        return ebsRepositoryState.getDetection(token, id)
     }
 }

@@ -83,7 +83,7 @@ class AuthManager @Inject constructor(
         val hashedNonce = createNonce()
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId("981332637673-otgo810evdbis5hd6oa6pkiq4ha6dq3e.apps.googleusercontent.com")
+            .setServerClientId("981332637673-7mots16s12g5habetmuav47s59o3nu8v.apps.googleusercontent.com")
             .setAutoSelectEnabled(false)
             .setNonce(hashedNonce)
             .build()
@@ -103,6 +103,7 @@ class AuthManager @Inject constructor(
                 idToken = googleIdToken
                 provider = Google
             }
+            Log.e("ini","SignIn Success")
             emit(AuthResponse.Success)
         } catch (e: Exception){
             emit(AuthResponse.Error("Error: ${UUID.randomUUID()} - ${e.localizedMessage}"))
@@ -111,6 +112,7 @@ class AuthManager @Inject constructor(
 
     fun getGoogleProfileInfo(): GoogleProfileFields? {
         val json: String? = if (googleIdTokenCredential != null) {
+            Log.e("ini","Google Id Token")
             googleIdTokenCredential?.idToken?.let { idToken ->
                 val parts = idToken.split(".")
                 if (parts.size == 3) {
@@ -119,6 +121,7 @@ class AuthManager @Inject constructor(
                 } else null
             }
         } else {
+            Log.e("ini","Supabase Id Token")
             supabase.auth.currentSessionOrNull()?.accessToken?.let { idToken ->
                 val parts = idToken.split(".")
                 if (parts.size == 3) {
@@ -127,6 +130,7 @@ class AuthManager @Inject constructor(
                 } else null
             }
         }
+        Log.e("ini","Udah Google Id Token")
         return json?.let {
             GoogleProfileFields(
                 email = """"email"\s*:\s*"([^"]+)"""".toRegex().find(it)?.groups?.get(1)?.value,

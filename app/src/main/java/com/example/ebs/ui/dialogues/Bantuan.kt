@@ -1,5 +1,6 @@
 package com.example.ebs.ui.dialogues
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.ui.components.shapes.MyIcon
 import com.example.ebs.ui.components.structures.CenterColumn
@@ -16,7 +18,7 @@ import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextTitleS
 
 @Composable
-fun Bantuan() {
+fun Bantuan(navController: NavController) {
     Card {
         CenterColumn(
             modifier = Modifier
@@ -41,7 +43,10 @@ fun Bantuan() {
                 }
                 MyIcon(
                     painterResource(id = R.drawable.close),
-                    contentDescription = "avItem.name"
+                    contentDescription = "avItem.name",
+                    modifier = Modifier.clickable {
+                        navController.popBackStack()
+                    }
                 )
             }
             TextTitleS(

@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.ebs.data.structure.remote.ebs.articles.Article
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.navigation.destinations.Route
 import kotlinx.serialization.json.Json
 
@@ -43,9 +43,7 @@ class NavigationHandler(private val navController: NavController) {
     }
     private fun justNavigate(route: Any) {
         navController.navigate(route){
-            popUpTo(
-                navController.graph.findStartDestination().id
-            ) { saveState = true }
+            popUpTo(navController.graph.findStartDestination().id)
             launchSingleTop = true
             restoreState = true
         }
@@ -68,18 +66,31 @@ class NavigationHandler(private val navController: NavController) {
     val menuFromSignIn: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignIn) }
     val menuFromSignUp: () -> Unit = { navigateWithPopUpTo(Route.Dashboard, Route.SignUp) }
     val notifikasiFromMenu: () -> Unit = { justNavigate(Route.Notifikasi) }
-    fun detailFromMenu (detection: DataDetections) {
-        val json = Json.encodeToString(DataDetections.serializer(), detection)
-        Log.e("NavigationHandler", "detailFromMenu: $json")
-        justNavigate(Route.Detail(data = json))
+    fun detailFromMenu (data: ScanResponse, img: String) {
+        val json = Json.encodeToString(ScanResponse.serializer(), data)
+        try {
+            Log.e("NavigationHandler", "detailFromMenu called with data: $data and img: $img")
+            justNavigate(Route.Detail(data = json, img = img))
+        } catch (e: Exception) {
+            Log.e("NavigationHandler", "Error navigating to Detail: ${e.message}", e)
+        }
     }
-    fun scanFromDetail (detection: DataDetections) {
-        val json = Json.encodeToString(DataDetections.serializer(), detection)
-        navigateWithPopUpToAndForgor(Route.Scan, Route.Detail(data = json))
+    fun scanFromDetail (data: ScanResponse, img: String) {
+        Log.e("NavigationHandler", "scanFromDetail called with data: $data and img: $img")
+        val json = Json.encodeToString(ScanResponse.serializer(), data)
+        try {
+            navigateWithPopUpToAndForgor(Route.Scan, Route.Detail(data = json, img = img))
+        } catch (e: Exception) {
+            Log.e("NavigationHandler", "Error navigating to Detail: ${e.message}", e)
+        }
     }
     fun articleFromMenu (article: Article) {
         val json = Json.encodeToString(Article.serializer(), article)
-        justNavigate(Route.Article(data = json))
+        try {
+            justNavigate(Route.Article(data = json))
+        } catch (e: Exception) {
+            Log.e("NavigationHandler", "Error navigating to Detail: ${e.message}", e)
+        }
     }
     val dashboard: () -> Unit = { justNavigate(Route.Dashboard) }
     val riwayat: () -> Unit = { justNavigate(Route.Riwayat) }

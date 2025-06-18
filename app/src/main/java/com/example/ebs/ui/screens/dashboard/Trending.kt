@@ -23,10 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.ebs.R
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
-import com.example.ebs.data.structure.remote.ebs.detections.DataNewDetection
-import com.example.ebs.data.structure.remote.ebs.detections.Detection
-import com.example.ebs.data.structure.remote.ebs.detections.Histories
+import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.texts.TextContentL
 import com.example.ebs.ui.components.texts.TextContentM
@@ -40,7 +38,7 @@ import kotlinx.datetime.toLocalDateTime
 @Composable
 fun Trending(
     viewModelAuth: MainViewModel,
-    history: List<Histories>
+    history: List<Detection>
 ){
     HeadlineDashboard {
         TextTitleM(
@@ -57,8 +55,8 @@ fun Trending(
                 .padding(bottom = 15.dp, top = 10.dp)
                 .clickable{
                     viewModelAuth.navHandler.riwayat()
-                },
-            true)
+                }
+        )
     }
 
     Box(
@@ -78,7 +76,7 @@ fun Trending(
                     Text(text = "Loading...", color = Color.Gray)
                 }
             }
-            history.size == 1 && history[0] == Histories() -> {
+            history.size == 1 && history[0] == Detection() -> {
                 CenterColumn (
                     modifier = Modifier
                         .fillMaxWidth()
@@ -102,31 +100,16 @@ fun Trending(
                         key = { hist -> history[hist].id },
                     ) { item ->
                         CardDashboard(
-                            photo = history[item].objects.firstOrNull()?.imageUrl ?: "",
+                            photo = history[item].imageUrl,
                             modifier = Modifier
                                 .height(125.dp)
                                 .width(240.dp)
                                 .clickable {
                                     viewModelAuth.navHandler.detailFromMenu(
-                                        DataDetections(
-                                            "",
-                                            DataNewDetection(
-                                                history[item].objects.firstOrNull()?.scanId ?: "",
-                                                history[item].objects.map { it ->
-                                                    Detection(
-                                                        it.scanId,
-                                                        it.imageUrl,
-                                                        it.category,
-                                                        it.confidence,
-                                                        it.regressionResult,
-                                                        it.description,
-                                                        it.suggestion,
-                                                        it.riskLvl,
-                                                        it.detectionSource
-                                                    )
-                                                }
-                                            )
-                                        )
+                                        ScanResponse().copy(
+                                            id = history[item].id
+                                        ),
+                                        history[item].imageUrl
                                     )
                                 }
                         ) {

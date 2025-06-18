@@ -50,8 +50,7 @@ fun TopBer(
         TextTitleL(
             text = title,
             modifier = Modifier
-                .align(Alignment.Center),
-            mod = mod
+                .align(Alignment.Center)
         )
     }
 }

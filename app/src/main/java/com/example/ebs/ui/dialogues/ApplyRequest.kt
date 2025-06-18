@@ -1,5 +1,6 @@
 package com.example.ebs.ui.dialogues
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.ui.components.shapes.MyCard
 import com.example.ebs.ui.components.shapes.MyIcon
@@ -26,7 +28,7 @@ import com.example.ebs.ui.components.texts.TextContentS
 
 
 @Composable
-fun ApplyRequest() {
+fun ApplyRequest(navController: NavController) {
     Card{
         CenterColumn(
             modifier = Modifier
@@ -53,7 +55,10 @@ fun ApplyRequest() {
                 }
                 MyIcon(
                     painterResource(id = R.drawable.close),
-                    contentDescription = "avItem.name"
+                    contentDescription = "avItem.name",
+                    modifier = Modifier.clickable {
+                        navController.popBackStack()
+                    }
                 )
             }
             MyCard(

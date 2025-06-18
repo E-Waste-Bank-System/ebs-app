@@ -108,8 +108,7 @@ fun Ubah(
                         },
                         modifier = Modifier
                             .padding(16.dp)
-                            .align(Center),
-                        mod = true
+                            .align(Center)
                     )
                 } else {
                     CircularProgressIndicator(

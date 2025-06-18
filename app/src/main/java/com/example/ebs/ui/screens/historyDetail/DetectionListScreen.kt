@@ -37,15 +37,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.book.DataTest
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
-import com.example.ebs.data.structure.remote.ebs.detections.DataNewDetection
-import com.example.ebs.data.structure.remote.ebs.detections.Detection
-import com.example.ebs.data.structure.remote.ebs.detections.Histories
+import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextTitleS
@@ -105,7 +104,7 @@ fun DetectionListScreen(
                 }
             }
 
-            history.size == 1 && history[0] == Histories() -> {
+            history.size == 1 && history[0] == Detection() -> {
                 CenterColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -137,7 +136,7 @@ fun DetectionListScreen(
                             key = { hist -> history[hist].id },
                         ) { item ->
                             CardDashboard(
-                                photo = history[item].objects.firstOrNull()?.imageUrl ?: "",
+                                photo = history[item].imageUrl,
                                 modifier = Modifier
                                     .height(125.dp)
                                     .fillMaxWidth(0.85f)
@@ -161,10 +160,13 @@ fun DetectionListScreen(
                                         Column {
                                             TextTitleS(
                                                 history[item].createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
-                                                modifier = Modifier.height(22.dp)
+                                                modifier = Modifier.height(22.dp),
+                                                textAlign = TextAlign.Start
                                             )
                                             if(history[item].objects.isEmpty()) {
-                                                TextTitleS("Tidak ada yang terdeteksi")
+                                                TextTitleS(
+                                                    "Tidak ada yang terdeteksi",
+                                                    textAlign = TextAlign.Start)
                                             } else {
                                                 TextTitleS(history[item].objects.first().category)
                                             }
@@ -184,25 +186,10 @@ fun DetectionListScreen(
                                             .align(Alignment.BottomEnd)
                                             .clickable {
                                                 viewModelAuth.navHandler.detailFromMenu(
-                                                    DataDetections(
-                                                        "",
-                                                        DataNewDetection(
-                                                            history[item].objects.firstOrNull()?.scanId ?: "",
-                                                            history[item].objects.map { it ->
-                                                                Detection(
-                                                                    it.scanId,
-                                                                    it.imageUrl,
-                                                                    it.category,
-                                                                    it.confidence,
-                                                                    it.regressionResult,
-                                                                    it.description,
-                                                                    it.suggestion,
-                                                                    it.riskLvl,
-                                                                    it.detectionSource
-                                                                )
-                                                            }
-                                                        )
-                                                    )
+                                                    ScanResponse().copy(
+                                                        id = history[item].id
+                                                    ),
+                                                    history[item].imageUrl
                                                 )
                                             }
                                         ) {

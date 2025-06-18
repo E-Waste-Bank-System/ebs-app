@@ -48,7 +48,7 @@ fun Indicator(
                 withStyle(SpanStyle(color = color)) {
                     append(text)
                 }
-            }, mod = true)
+            })
         }
     }
 }

@@ -89,12 +89,12 @@ fun WelcomeScreen(
                     append(stringResource(R.string.open_n1))
                 }
                 append(",")
-            }, mod = true)
+            })
             TextTitleM(buildAnnotatedString {
                 withStyle(SpanStyle(color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)) {
                     append(stringResource(R.string.open_n2))
                 }
-            }, mod = true)
+            })
 
             Spacer(modifier = Modifier.height(8.dp))
 

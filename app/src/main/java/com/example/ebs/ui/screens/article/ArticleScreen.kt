@@ -2,34 +2,38 @@ package com.example.ebs.ui.screens.article
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.articles.Article
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
+import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentL
+import com.example.ebs.ui.components.texts.TextContentM
+import com.example.ebs.ui.components.texts.TextTitleL
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.screens.MainViewModel
 import com.example.ebs.ui.screens.detail.WasteDetailViewModel
@@ -54,21 +58,14 @@ fun ArticleScreen(
                     .fillMaxHeight()
                     .align(TopCenter)
             ) {
-                TextTitleM(
+                TextTitleL(
                     data.title,
                     modifier = Modifier
                         .align(Start),
                     textAlign = TextAlign.Start
                 )
-                if (data.imageUrl == "") {
-                    Image(
-                        painterResource(R.drawable.nopicture),
-                        contentDescription = "Icon",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
+                if (data.imageUrl == "" || data.imageUrl == null) {
+                    Spacer(modifier = Modifier.padding(bottom = 15.dp))
                 } else {
                     Image(
                         painter = rememberAsyncImagePainter(data.imageUrl),
@@ -81,10 +78,144 @@ fun ArticleScreen(
                             .clip(RoundedCornerShape(8.dp))
                     )
                 }
-                TextContentL(
-                    data.content,
-                    textAlign = TextAlign.Start
-                )
+                data.content.blocks.forEach({
+                    when (it.type) {
+                        "header" -> {
+                            TextTitleM(
+                                it.data.text,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                                textAlign = TextAlign.Start
+                            )
+                        }
+                        "paragraph" -> {
+                            TextContentL(
+                                it.data.text,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
+                                textAlign = TextAlign.Start
+                            )
+                        }
+                        "list" -> {
+                            when (it.data.style) {
+                                "unordered" -> {
+                                    it.data.items.forEach { item ->
+                                        TextContentL(
+                                            "\u2022 ${item.content}",
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 20.dp, bottom = 2.dp),
+                                            textAlign = TextAlign.Start
+                                        )
+                                    }
+                                }
+                                "ordered" -> {
+                                    it.data.items.forEachIndexed { idx, item ->
+                                        TextContentL(
+                                            "${idx + 1}. ${item.content}",
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 20.dp, bottom = 2.dp),
+                                            textAlign = TextAlign.Start
+                                        )
+                                    }
+                                }
+                                "checklist" -> {
+                                    it.data.items.forEach { item ->
+                                        val check = if (item.meta?.checked == true) "\u2611" else "\u2610"
+                                        TextContentL(
+                                            "$check ${item.content}",
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 20.dp, bottom = 2.dp),
+                                            textAlign = TextAlign.Start
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        "quote" -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            ) {
+                                TextContentL(
+                                    "<i>\"${it.data.text}\" - ${it.data.caption}</i>",
+                                    modifier = Modifier.padding(8.dp),
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                        "code" -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f))
+                            ) {
+                                TextContentL(
+                                    it.data.code,
+                                    modifier = Modifier.padding(8.dp),
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                        "delimiter" -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                HorizontalDivider()
+                            }
+                        }
+                        "table" -> {
+                            SimpleTable(
+                                data = it.data.content,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 10.dp)
+                            )
+                        }
+                    }
+                })
+            }
+        }
+    }
+}
+
+@Composable
+fun SimpleTable(
+    data: List<List<String>>,
+    modifier: Modifier = Modifier
+) {
+    CenterColumn(modifier = modifier) {
+        data.forEachIndexed { index, row ->
+            CenterRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
+                row.forEachIndexed { cellIndex, cell ->
+                    TextContentM(
+                        text = cell,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp),
+                        textAlign = TextAlign.Start
+                    )
+                    if (cellIndex < row.lastIndex) {
+                        TextContentL("|")
+                    }
+                }
+            }
+            if (index < data.lastIndex) {
+                HorizontalDivider()
             }
         }
     }

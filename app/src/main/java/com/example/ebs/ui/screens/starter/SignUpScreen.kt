@@ -86,8 +86,7 @@ fun SignUpScreen(
                         },
                         modifier = Modifier
                             .padding(16.dp)
-                            .align(Center),
-                        mod = true
+                            .align(Center)
                     )
                 } else {
                     CircularProgressIndicator(
@@ -108,7 +107,7 @@ fun SignUpScreen(
 //                                viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
                                 viewModelAuth.navHandler.menuFromSignUp()
                             } else {
-                                Log.d("AuthManager", result.toString())
+                                Log.e("AuthManager", result.toString())
                             }
                         }
                 }
@@ -125,7 +124,6 @@ fun SignUpScreen(
                         append(stringResource(R.string.login))
                     }
                 },
-                mod = true,
                 modifier = Modifier
                     .clickable { viewModelAuth.navHandler.signInFromSignUp() }
             )

@@ -70,6 +70,7 @@ fun DashboardScreen(
                                 name = userPref.name.first(),
                             )
                         )
+                        Log.e("ini","Udah Local")
                     }
                 }
                 val delayJob = async { delay(2000) }
@@ -90,7 +91,7 @@ fun DashboardScreen(
         }
     }
 
-    Log.d("Route", "This is Dashboard first? ${viewModelAuth.firstOpen}")
+    Log.e("Route", "This is Dashboard first? ${viewModelAuth.firstOpen}")
     if (loadStatus.value && !viewModelAuth.firstOpen) {
         val exitDialogue = remember { mutableStateOf(false) }
 

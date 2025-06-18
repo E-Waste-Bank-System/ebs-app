@@ -100,7 +100,7 @@ fun NotifikasiScreen(
                             withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
                                 append("Catatan: tidak bisa menyala")
                             }
-                        }, mod = true)
+                        })
                         Indicator("Pending", Color(0xFFE27700))
                     }
                 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.ebs.R
 import com.example.ebs.ui.components.shapes.MyIcon
 import com.example.ebs.ui.components.structures.CenterColumn
@@ -22,7 +23,7 @@ import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextTitleS
 
 @Composable
-fun BeriNilai() {
+fun BeriNilai(navController: NavController) {
     val uriHandler = LocalUriHandler.current
     Card {
         CenterColumn(
@@ -48,7 +49,10 @@ fun BeriNilai() {
                 }
                 MyIcon(
                     painterResource(id = R.drawable.close),
-                    contentDescription = "avItem.name"
+                    contentDescription = "avItem.name",
+                    modifier = Modifier.clickable {
+                        navController.popBackStack()
+                    }
                 )
             }
             TextTitleS(
@@ -60,7 +64,7 @@ fun BeriNilai() {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append("Feedback Link")
                 }
-            }, mod = true,
+            },
                 modifier = Modifier
                     .clickable {
                         uriHandler.openUri("https://forms.gle/eu7Kpv1jw47oQGWa9")

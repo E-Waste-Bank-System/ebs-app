@@ -44,12 +44,12 @@ fun Greeting(viewModelAuth: MainViewModel) {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append(stringResource(R.string.ayo))
                 }
-            }, mod = true)
+            })
             TextTitleM(buildAnnotatedString {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append(stringResource(R.string.elek))
                 }
-            }, mod = true)
+            })
         }
 
         CenterRow(

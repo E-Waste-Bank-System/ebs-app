@@ -49,8 +49,7 @@ fun BottomNavigationItem(
         TextTitleS( if (selected) buildAnnotatedString {
             withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                 append(navItem.name)
-            }} else navItem.name,
-            mod = selected
+            }} else navItem.name
         )
     }
 }

@@ -1,12 +1,10 @@
 package com.example.ebs.data.repositories.remote.ebsApi
 
-import com.example.ebs.data.structure.remote.ebs.articles.DataArticles
-import com.example.ebs.data.structure.remote.ebs.auth.AdminLoginResponse
-import com.example.ebs.data.structure.remote.ebs.auth.AdminTesLogin
 import com.example.ebs.data.structure.remote.ebs.auth.UserLoginResponse
 import com.example.ebs.data.structure.remote.ebs.auth.UserMintaToken
-import com.example.ebs.data.structure.remote.ebs.detections.DataDetections
-import com.example.ebs.data.structure.remote.ebs.detections.Histories
+import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
+import com.example.ebs.data.structure.remote.ebs.detections.head.Histories
+import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,39 +13,40 @@ import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface EBSApiService {
-    @GET("articles")
-    suspend fun getData(
-        @Header("Authorization") token: String
-    ): DataArticles
+//    @GET("v1/articles")
+//    suspend fun getArticles(
+//        @Header("Authorization") token: String
+//    ): DataArticles
 
-    @POST("auth/login")
-    suspend fun tesLoginAdmin(
-        @Body loginRequest: AdminTesLogin
-    ): AdminLoginResponse
+//    @POST("v1/auth/login")
+//    suspend fun postLoginReq(
+//        @Body loginRequest: AdminTesLogin
+//    ): AdminLoginResponse
 
-    @POST("auth/token")
-    suspend fun tesLoginUser(
-        @Body loginRequest: UserMintaToken
+    @POST("v1/auth/token")
+    suspend fun getUserToken(
+        @Body tokenRequest: UserMintaToken
     ): UserLoginResponse
 
     @Multipart
     @Headers("Accept: application/json")
-    @POST("detections")
+    @POST("v1/scans")
     suspend fun postDetection(
         @Header("Authorization") token: String,
-        @Part image: MultipartBody.Part,
-        @Part userId: MultipartBody.Part
-    ): DataDetections
+        @Part file: MultipartBody.Part
+    ): ScanResponse
 
-    @GET("detections/user/{userId}")
+    @GET("v1/scans")
     suspend fun getUserDetections(
-        @Header("Authorization") token: String,
-        @retrofit2.http.Path("userId") userId: String
-    ): List<Histories>
+        @Header("Authorization") token: String
+    ): Histories
 
-    companion object {
-        const val POLLING_INTERVAL = 5000L // 5 seconds
-    }
+    @GET("v1/scans/{id}")
+    suspend fun getDetection(
+        @Header("Authorization") token: String,
+        @Path("id") userId: String
+    ): Detection
 }

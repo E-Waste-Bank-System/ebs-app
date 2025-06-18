@@ -89,7 +89,7 @@ fun Sorotan(
                         key = { article -> article.id },
                     ) { article: Article ->
                         CardDashboard(
-                            photo = article.imageUrl,
+                            photo = article.imageUrl ?: "",
                             modifier = Modifier
                                 .height(100.dp)
                                 .clickable {
