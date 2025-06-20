@@ -1,6 +1,7 @@
 package com.example.ebs.ui.navigation
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -22,16 +23,25 @@ import com.example.ebs.ui.screens.MainViewModel
 fun MyNavigationg(
     userPref: UserPreferencesRepository,
     navigateTo: String? = null,
-    modifier: Modifier = Modifier,
+    scanResult: String? = null,
+    resetIntentData: () -> Unit = { },
     navController: NavHostController = rememberNavController(),
-    viewModelAuth: MainViewModel = hiltViewModel(),
+    viewModelMain: MainViewModel = hiltViewModel(),
 ) {
-    viewModelAuth.initializeNavHandler(navController)
+    viewModelMain.updateNavigateTo(navigateTo)
+    viewModelMain.updateScanResult(scanResult)
+
+    resetIntentData()
+    Log.e("navigate_to", "Reset intent data called, navigateTo: $navigateTo, scanResult: $scanResult")
+
+    viewModelMain.initializeNavHandler(navController)
+
     val holder = remember { mutableStateOf(false) }
     val loadPrevious = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        loadPrevious.value = viewModelAuth.authManagerState.isSignedIn()
+        loadPrevious.value =
+            viewModelMain.authManagerState.isSignedIn()
         holder.value = true
     }
 
@@ -39,16 +49,14 @@ fun MyNavigationg(
         Surface {
             NavHost(
                 navController = navController,
-                startDestination = if (!loadPrevious.value) Route.Welcome else (Route.Dashboard),
-                modifier = modifier
+                startDestination =
+                    if (!loadPrevious.value) Route.Welcome else (Route.Dashboard),
             ) {
-                mainNav(navController, userPref, viewModelAuth, navigateTo)
+                mainNav(navController, userPref, viewModelMain)
             }
         }
     } else {
-        Surface (
-            modifier = Modifier.fillMaxSize()
-        ){}
+        Surface (Modifier.fillMaxSize()) {}
     }
 }
 

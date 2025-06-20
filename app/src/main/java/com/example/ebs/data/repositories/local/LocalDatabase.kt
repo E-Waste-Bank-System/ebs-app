@@ -4,24 +4,25 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.ebs.data.structure.local.localItems.Item
+import com.example.ebs.data.structure.local.localItems.DeletedScans
+import com.example.ebs.data.structure.local.localItems.ViewedArticles
 
 /**
  * Database class with a singleton Instance object.
  */
-@Database(entities = [Item::class], version = 1, exportSchema = false)
-abstract class ItemsDatabase : RoomDatabase() {
+@Database(entities = [ViewedArticles::class, DeletedScans::class], version = 1, exportSchema = false)
+abstract class LocalDatabase : RoomDatabase() {
 
-    abstract fun itemDao(): ItemDao
+    abstract fun itemDao(): LocalDao
 
     companion object {
         @Volatile
-        private var Instance: ItemsDatabase? = null
+        private var Instance: LocalDatabase? = null
 
-        fun getDatabase(context: Context): ItemsDatabase {
+        fun getDatabase(context: Context): LocalDatabase {
             // if the Instance is not null, return it, otherwise create a new database instance.
             return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, ItemsDatabase::class.java, "item_database")
+                Room.databaseBuilder(context, LocalDatabase::class.java, "local_database")
                     .build()
                     .also { Instance = it }
             }

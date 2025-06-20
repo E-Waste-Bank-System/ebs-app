@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,10 +30,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Sorotan(
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     articles: List<Article>
 ) {
     HeadlineDashboard {
@@ -93,7 +90,8 @@ fun Sorotan(
                             modifier = Modifier
                                 .height(100.dp)
                                 .clickable {
-                                    viewModelAuth.navHandler.articleFromMenu(article)
+                                    viewModelMain.navHandler.articleFromMenu(article)
+                                    viewModelMain.addViewCounter(article.id,article.viewCount)
                                 }
                         ) {
                             CenterColumn(
@@ -107,8 +105,7 @@ fun Sorotan(
                                     TextTitleS(
                                         article.title,
                                         modifier = Modifier
-                                            .width(200.dp)
-                                            .height(25.dp),
+                                            .height(40.dp),
                                         textAlign = TextAlign.Start
                                     )
                                 }

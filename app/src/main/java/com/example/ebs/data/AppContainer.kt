@@ -1,12 +1,9 @@
 package com.example.ebs.data
 
-import android.R.attr.level
 import android.content.Context
-import com.example.ebs.BuildConfig
-import com.example.ebs.data.repositories.local.LocalItemsRepository
-import com.example.ebs.data.repositories.local.ItemsDatabase
-import com.example.ebs.data.repositories.local.ItemsRepository
-import com.example.ebs.data.repositories.remote.book.BookRepositoryInf
+import com.example.ebs.BuildConfig.BASE_API_URL
+import com.example.ebs.data.repositories.local.LocalDatabase
+import com.example.ebs.data.repositories.local.LocalRepository
 import com.example.ebs.data.repositories.remote.ebsApi.EBSApiService
 import com.example.ebs.data.repositories.remote.ebsApi.EBSRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -25,15 +22,15 @@ import javax.inject.Singleton
 /**
  * App container for Dependency injection.
  */
-interface AppContainer {
-    val itemsRepository: ItemsRepository
-    val dataTestRepository: BookRepositoryInf
-}
+//interface AppContainer {
+//    val localRepositoryInf: LocalRepositoryInf
+//    val dataTestRepository: BookRepositoryInf
+//}
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppDataContainer {
-    val BASE_URL = BuildConfig.BASE_API_URL
+    const val BASE_URL = BASE_API_URL
 
     @Provides
     @Singleton
@@ -49,7 +46,9 @@ object AppDataContainer {
             .build()
 
         return Retrofit.Builder()
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(
+                Json.asConverterFactory("application/json".toMediaType())
+            )
             .baseUrl(BASE_URL)
             .client(client)
             .build()
@@ -69,8 +68,8 @@ object AppDataContainer {
 
     @Provides
     @Singleton
-    fun provideItemsRepository(context: Context): ItemsRepository {
-        return LocalItemsRepository(ItemsDatabase.getDatabase(context).itemDao())
+    fun provideItemsRepository(context: Context): LocalRepository {
+        return LocalRepository(LocalDatabase.getDatabase(context).itemDao())
     }
 
     @Provides

@@ -25,7 +25,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ebs.data.structure.remote.ebs.articles.Article
 import com.example.ebs.ui.components.shapes.TopBarPage
@@ -40,13 +39,12 @@ import com.example.ebs.ui.screens.detail.WasteDetailViewModel
 
 @Composable
 fun ArticleScreen(
-    navController: NavController,
     data: Article,
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     viewModel: WasteDetailViewModel = hiltViewModel()
 ) {
     Log.d("Route", "This is Article")
-    TopBarPage("Article", viewModelAuth.navHandler){
+    TopBarPage("Article", viewModelMain.navHandler){
         Box (
             modifier = Modifier
                 .fillMaxSize()
@@ -61,11 +59,22 @@ fun ArticleScreen(
                 TextTitleL(
                     data.title,
                     modifier = Modifier
-                        .align(Start),
-                    textAlign = TextAlign.Start
+                        .align(Start)
+                        .padding(
+                            top =
+                            if (data.imageUrl == "" || data.imageUrl == null)
+                                15.dp
+                            else
+                                40.dp
+                        ),
+                    textAlign =
+                        if (data.imageUrl == "" || data.imageUrl == null)
+                            TextAlign.Center
+                        else
+                            TextAlign.Start
                 )
                 if (data.imageUrl == "" || data.imageUrl == null) {
-                    Spacer(modifier = Modifier.padding(bottom = 15.dp))
+                    Spacer(modifier = Modifier.padding(bottom = 40.dp))
                 } else {
                     Image(
                         painter = rememberAsyncImagePainter(data.imageUrl),
@@ -124,7 +133,11 @@ fun ArticleScreen(
                                 }
                                 "checklist" -> {
                                     it.data.items.forEach { item ->
-                                        val check = if (item.meta?.checked == true) "\u2611" else "\u2610"
+                                        val check =
+                                            if (item.meta.checked == true)
+                                                "\u2611"
+                                            else
+                                                "\u2610"
                                         TextContentL(
                                             "$check ${item.content}",
                                             modifier = Modifier
@@ -156,7 +169,12 @@ fun ArticleScreen(
                                     .fillMaxWidth()
                                     .padding(10.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f))
+                                    .background(
+                                        MaterialTheme
+                                            .colorScheme
+                                            .surfaceVariant
+                                            .copy(alpha = 0.1f)
+                                    )
                             ) {
                                 TextContentL(
                                     it.data.code,

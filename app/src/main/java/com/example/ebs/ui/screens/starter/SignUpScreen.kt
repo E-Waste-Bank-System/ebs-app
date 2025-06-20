@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -22,25 +23,21 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.ebs.R
-import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.ui.components.inputs.AestheticButton
 import com.example.ebs.ui.components.inputs.InputSpace
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
-import com.example.ebs.ui.components.texts.TextTitleL
-import com.example.ebs.ui.components.texts.TextTitleS
+import com.example.ebs.ui.components.texts.TextTitleM
+import com.example.ebs.ui.components.texts.TextTitleXL
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(
-    navController: NavController,
-    userPref: UserPreferencesRepository,
-    viewModelAuth: MainViewModel
+    viewModelMain: MainViewModel
 ) {
     Log.d("Route", "This is SignUp")
     val coroutineScope = rememberCoroutineScope()
@@ -49,7 +46,7 @@ fun SignUpScreen(
     BackHandler { exitDialogue.value = true }
 
     if (exitDialogue.value) {
-        viewModelAuth.navHandler.exitDialogue()
+        viewModelMain.navHandler.exitDialogue()
         exitDialogue.value = false
     }
 
@@ -58,7 +55,7 @@ fun SignUpScreen(
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
     ) {
-        TextTitleL(stringResource(R.string.sign_up))
+        TextTitleXL(stringResource(R.string.sign_up))
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -71,14 +68,14 @@ fun SignUpScreen(
         InputSpace(stringResource(R.string.username),username)
         InputSpace(stringResource(R.string.email),email)
         InputSpace(stringResource(R.string.notel),notel)
-        InputSpace(stringResource(R.string.password),password)
+        InputSpace(stringResource(R.string.password),password, Modifier.imePadding())
 
         Spacer(modifier = Modifier.height(16.dp))
 
         AestheticButton(
             content = {
-                if (waitEmail.value == false) {
-                    TextTitleS(
+                if (!waitEmail.value) {
+                    TextTitleM(
                         buildAnnotatedString {
                             withStyle(SpanStyle(color = Color.White)) {
                                 append("Daftar")
@@ -97,19 +94,27 @@ fun SignUpScreen(
                 }
             },
             onClick = {
+                waitEmail.value = true
                 coroutineScope.launch {
-                    viewModelAuth.authManagerState.signUpWithEmail(email.value, password.value)
+                    viewModelMain.authManagerState
+                        .signUpWithEmail(email.value, password.value)
                         .collect { result ->
-                            waitEmail.value = false
-                            if(result is AuthResponse.Success) {
-                                viewModelAuth.updateLocalCred(viewModelAuth.authManagerState.getAuthToken() ?: "")
-                                Log.e("UserId", viewModelAuth.localCred)
-//                                viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
-                                viewModelAuth.navHandler.menuFromSignUp()
-                            } else {
+                        waitEmail.value = false
+                        when (result) {
+                            is AuthResponse.Success -> {
+                                viewModelMain.updateLocalCred(
+                                    viewModelMain.authManagerState
+                                        .getAuthToken() ?: ""
+                                )
+                                Log.e("UserId", viewModelMain.localCred)
+                                // viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
+                                viewModelMain.navHandler.menuFromSignUp()
+                            }
+                            else -> {
                                 Log.e("AuthManager", result.toString())
                             }
                         }
+                    }
                 }
             }
         )
@@ -125,7 +130,7 @@ fun SignUpScreen(
                     }
                 },
                 modifier = Modifier
-                    .clickable { viewModelAuth.navHandler.signInFromSignUp() }
+                    .clickable { viewModelMain.navHandler.signInFromSignUp() }
             )
         }
     }

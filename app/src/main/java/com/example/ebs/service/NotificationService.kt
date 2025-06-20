@@ -1,5 +1,6 @@
 package com.example.ebs.service
 
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -9,20 +10,39 @@ import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import com.example.ebs.MainActivity
 import com.example.ebs.R
+import com.squareup.picasso.Picasso
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
-class WaterNotificationService(
+class EBSNotificationService(
     private val context: Context
 ){
     private val notificationManager = context.getSystemService(NotificationManager::class.java)
-    fun showBasicNotification(){
+    fun showBasicNotification(): Notification {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("navigate_to", "dashboard")
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        return NotificationCompat.Builder(context, "ebs_notification")
+            .setContentTitle("EBS Notification")
+            .setContentText("Your Scanning in progress.")
+            .setSmallIcon(R.drawable.e_waste_illustration)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+    }
+    fun showUnverifiedNotification(){
         val intent = Intent(context, MainActivity::class.java).apply {
             putExtra("navigate_to", "profile")
         }
         val pendingIntent = PendingIntent.getActivity(
             context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val notification = NotificationCompat.Builder(context, "water_notification")
+        val notification = NotificationCompat.Builder(context, "ebs_notification")
             .setContentTitle("Silakan Verifikasi Akun Anda")
             .setContentText("Konfirmasi sudah dikirim ke email anda, silakan cek email anda untuk verifikasi akun")
             .setSmallIcon(R.drawable.e_waste_illustration)
@@ -30,27 +50,36 @@ class WaterNotificationService(
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
-
         notificationManager.notify(
             Random.nextInt(),
             notification
         )
     }
 
-    fun showExpandableNotification(){
-        val notification= NotificationCompat.Builder(context,"water_notification")
-            .setContentTitle("Water Reminder")
-            .setContentText("Time to drink a glass of water")
+    suspend fun showExpandableResultNotification(imgUrl:String,id:String){
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra("scan_result", "scan_result $id")
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val bitmap = withContext(Dispatchers.IO) {
+            Picasso.get()
+                .load(imgUrl)
+                .get()
+        }
+        val notification= NotificationCompat.Builder(context,"ebs_notification")
+            .setContentTitle("Detection Result Ready")
+            .setContentText("Time to see the results of your scan!")
             .setSmallIcon(R.drawable.e_waste_illustration)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setStyle(
                 NotificationCompat
                     .BigPictureStyle()
                     .bigPicture(
-                        context.bitmapFromResource(
-                            R.drawable.image_5
-                        )
+                        bitmap
                     )
             )
             .build()

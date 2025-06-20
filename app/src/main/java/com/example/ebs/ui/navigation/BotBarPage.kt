@@ -3,13 +3,13 @@ package com.example.ebs.ui.navigation
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -31,7 +31,8 @@ fun BotBarPage(
     Scaffold(
         bottomBar = {
             BottomNavigation(
-                hazeState = hazeState
+                hazeState = hazeState,
+                modifier = Modifier.offset(y= (20).dp)
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
@@ -41,13 +42,18 @@ fun BotBarPage(
                         selected = currentDestination
                             ?.hierarchy
                             ?.any {
-                                extractRouteName(navItem.route) == extractRouteName(it.route)
+                                extractRouteName(
+                                    navItem.route
+                                ) == extractRouteName(
+                                    it.route
+                                )
                             } == true,
                         navController = navController
                     )
                 }
             }
-        }
+        },
+        modifier = modifier.navigationBarsPadding()
     ) {
         CenterColumn(
             vArr = Arrangement.Top,

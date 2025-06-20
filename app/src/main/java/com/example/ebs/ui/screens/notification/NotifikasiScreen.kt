@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.example.ebs.ui.components.shapes.Indicator
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
@@ -31,13 +30,11 @@ import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
 fun NotifikasiScreen(
-    navController: NavController,
-    viewModelAuth: MainViewModel,
-    modifier: Modifier = Modifier,
+    viewModelMain: MainViewModel,
     viewModel: NotifikasiViewModel = hiltViewModel()
 ) {
     Log.d("Route", "This is Notifikasi")
-    TopBarPage("Notifikasi",viewModelAuth.navHandler) {
+    TopBarPage("Notifikasi",viewModelMain.navHandler) {
         LazyColumn {
             items(1) {
                 CenterRow(

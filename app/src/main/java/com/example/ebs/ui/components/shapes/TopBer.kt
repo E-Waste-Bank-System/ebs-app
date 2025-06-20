@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -32,9 +33,10 @@ fun TopBer(
             .padding(
                 start = 16.dp,
                 end = 16.dp,
-                top = 32.dp,
+                top = 8.dp,
                 bottom = 16.dp
             )
+            .statusBarsPadding()
     ){
         Icon(
             painter = painterResource(R.drawable.chevron_left),

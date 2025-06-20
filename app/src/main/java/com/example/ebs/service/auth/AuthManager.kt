@@ -2,7 +2,6 @@ package com.example.ebs.service.auth
 
 import android.content.Context
 import android.util.Base64
-import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import com.example.ebs.data.structure.GoogleProfileFields
@@ -13,8 +12,10 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
+import io.github.jan.supabase.auth.user.UserInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Instant
 import java.security.MessageDigest
 import java.util.UUID
 import javax.inject.Inject
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class AuthManager @Inject constructor(
     private val supabase: SupabaseClient
 ) {
+    private var signInResult: UserInfo? = null
     private var googleIdTokenCredential: GoogleIdTokenCredential? = null
 
     fun signOut(): Flow<AuthResponse> = flow {
@@ -33,8 +35,7 @@ class AuthManager @Inject constructor(
         }
     }
 
-    suspend fun isSignedIn(): Boolean {
-        Log.e("TAG", "Udahkah signin? ${supabase.auth.currentUserOrNull() != null}")
+    fun isSignedIn(): Boolean {
         return supabase.auth.currentUserOrNull() != null
     }
 
@@ -46,6 +47,13 @@ class AuthManager @Inject constructor(
         return supabase.auth.currentSessionOrNull()?.accessToken
     }
 
+    fun checkVerification(): Instant?{
+        return if (signInResult?.emailConfirmedAt == null)
+            supabase.auth.currentUserOrNull()?.emailConfirmedAt
+        else
+            signInResult?.emailConfirmedAt
+    }
+
 //    fun resendVerificationEmail(emailValue: String): Flow<AuthResponse> = flow {
 //        try {
 //           supabase.auth.sendEmailOtp(type = OtpType.Email, email = emailValue)
@@ -55,19 +63,23 @@ class AuthManager @Inject constructor(
 //        }
 //    }
 
-    fun signUpWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
+    fun signUpWithEmail(
+        emailValue: String, passwordValue: String
+    ): Flow<AuthResponse> = flow {
         try{
-            supabase.auth.signUpWith(Email){
-                email = emailValue
-                password = passwordValue
-            }
+           signInResult = supabase.auth.signUpWith(Email) {
+               email = emailValue
+               password = passwordValue
+           }
             emit(AuthResponse.Success)
         } catch(e: Exception){
             emit(AuthResponse.Error(e.localizedMessage))
         }
     }
 
-    fun signInWithEmail(emailValue: String, passwordValue: String): Flow<AuthResponse> = flow {
+    fun signInWithEmail(
+        emailValue: String, passwordValue: String
+    ): Flow<AuthResponse> = flow {
         try{
             supabase.auth.signInWith(Email){
                 email = emailValue
@@ -79,7 +91,9 @@ class AuthManager @Inject constructor(
         }
     }
 
-    fun loginGoogleUser(context: Context): Flow<AuthResponse> = flow {
+    fun loginGoogleUser(
+        context: Context
+    ): Flow<AuthResponse> = flow {
         val hashedNonce = createNonce()
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
@@ -103,7 +117,6 @@ class AuthManager @Inject constructor(
                 idToken = googleIdToken
                 provider = Google
             }
-            Log.e("ini","SignIn Success")
             emit(AuthResponse.Success)
         } catch (e: Exception){
             emit(AuthResponse.Error("Error: ${UUID.randomUUID()} - ${e.localizedMessage}"))
@@ -112,25 +125,24 @@ class AuthManager @Inject constructor(
 
     fun getGoogleProfileInfo(): GoogleProfileFields? {
         val json: String? = if (googleIdTokenCredential != null) {
-            Log.e("ini","Google Id Token")
             googleIdTokenCredential?.idToken?.let { idToken ->
                 val parts = idToken.split(".")
                 if (parts.size == 3) {
-                    val payloadJson = Base64.decode(parts[1], Base64.URL_SAFE)
+                    val payloadJson =
+                        Base64.decode(parts[1], Base64.URL_SAFE)
                     String(payloadJson)
                 } else null
             }
         } else {
-            Log.e("ini","Supabase Id Token")
             supabase.auth.currentSessionOrNull()?.accessToken?.let { idToken ->
                 val parts = idToken.split(".")
                 if (parts.size == 3) {
-                    val payloadJson = Base64.decode(parts[1], Base64.URL_SAFE)
+                    val payloadJson =
+                        Base64.decode(parts[1], Base64.URL_SAFE)
                     String(payloadJson)
                 } else null
             }
         }
-        Log.e("ini","Udah Google Id Token")
         return json?.let {
             GoogleProfileFields(
                 email = """"email"\s*:\s*"([^"]+)"""".toRegex().find(it)?.groups?.get(1)?.value,

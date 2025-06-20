@@ -9,5 +9,5 @@ data class User(
     val email: String = "",
     @SerialName("full_name") val fullName: String = "",
     val role: String = "",
-    @SerialName("avatar_url") val imgUrl: String = ""
+    @SerialName("avatar_url") val imgUrl: String? = ""
 )

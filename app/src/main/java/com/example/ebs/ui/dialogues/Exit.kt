@@ -2,13 +2,11 @@ package com.example.ebs.ui.dialogues
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
 fun Exit(
-    navController: NavController,
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     CustomAlertDialogue(
@@ -17,7 +15,7 @@ fun Exit(
         right = "Ya",
         left = "Tidak",
         modifier,
-        rightAct = { viewModelAuth.navHandler.closeApp() },
-        leftAct = { viewModelAuth.navHandler.back() }
+        rightAct = { viewModelMain.navHandler.closeApp() },
+        leftAct = { viewModelMain.navHandler.back() }
     )
 }

@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -47,6 +49,7 @@ import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
+import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleS
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.screens.MainViewModel
@@ -54,26 +57,27 @@ import com.example.ebs.ui.screens.dashboard.CardDashboard
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetectionListScreen(
     navController: NavController,
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     viewModel: DetectionListViewModel = hiltViewModel()
 ) {
     Log.d("Route", "This is Histories")
 
-    val history by viewModelAuth.history.collectAsState()
-    val isLoading by viewModelAuth.isLoading.collectAsState()
+    val history by viewModelMain.history.collectAsState()
+    val isLoading by viewModelMain.isLoading.collectAsState()
     val pullRefreshState = rememberPullToRefreshState()
 
     BotBarPage(
         navController = navController,
-        modifier = Modifier
-            .padding(top = 50.dp),
-        hazeState = viewModelAuth.hazeState
+        hazeState = viewModelMain.hazeState
     ) {
+        Spacer(modifier = Modifier.statusBarsPadding())
+        Spacer(modifier = Modifier.statusBarsPadding())
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -81,7 +85,7 @@ fun DetectionListScreen(
                     state = pullRefreshState,
                     isRefreshing = isLoading,
                     onRefresh = {
-                        viewModelAuth.refresh()
+                        viewModelMain.refresh()
                     }
                 ),
             contentAlignment = Alignment.TopStart
@@ -159,16 +163,36 @@ fun DetectionListScreen(
                                     ) {
                                         Column {
                                             TextTitleS(
-                                                history[item].createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                                                history[item]
+                                                    .createdAt
+                                                    .toLocalDateTime(
+                                                        TimeZone
+                                                            .currentSystemDefault()
+                                                    )
+                                                    .date
+                                                    .toJavaLocalDate()
+                                                    .format(
+                                                        DateTimeFormatter
+                                                            .ofPattern(
+                                                                "dd MMMM yyyy"
+                                                            )),
                                                 modifier = Modifier.height(22.dp),
                                                 textAlign = TextAlign.Start
                                             )
+                                            Spacer(modifier = Modifier.height(5.dp))
                                             if(history[item].objects.isEmpty()) {
                                                 TextTitleS(
                                                     "Tidak ada yang terdeteksi",
-                                                    textAlign = TextAlign.Start)
+                                                    textAlign = TextAlign.Start,
+                                                    modifier = Modifier.width(100.dp)
+
+                                                )
                                             } else {
-                                                TextTitleS(history[item].objects.first().category)
+                                                TextContentM(
+                                                    history[item].objects.joinToString(", ") { it.category },
+                                                    textAlign = TextAlign.Start,
+                                                    modifier = Modifier.width(100.dp)
+                                                )
                                             }
 //                                            TextTitleS(history[item].status)
     //                                        TextContentS("Kategori: Smarphone")
@@ -183,14 +207,42 @@ fun DetectionListScreen(
                                             .size(40.dp)
                                             .clip(CircleShape)
                                             .background(MaterialTheme.colorScheme.background)
-                                            .align(Alignment.BottomEnd)
+                                            .align(Alignment.TopEnd)
                                             .clickable {
-                                                viewModelAuth.navHandler.detailFromMenu(
-                                                    ScanResponse().copy(
-                                                        id = history[item].id
-                                                    ),
-                                                    history[item].imageUrl
-                                                )
+                                                viewModelMain
+                                                    .addDeletedScans(history[item].id)
+                                            }
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                painterResource(R.drawable.delete_forever),
+                                                contentDescription = "Notification",
+                                                tint =
+                                                    MaterialTheme
+                                                        .colorScheme.errorContainer,
+                                            )
+                                        }
+                                    }
+                                    CenterRow(
+                                        modifier = Modifier
+                                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme
+                                                .colorScheme
+                                                .background
+                                            ).align(Alignment.BottomEnd)
+                                            .clickable {
+                                                viewModelMain
+                                                    .navHandler
+                                                    .detailFromMenu(
+                                                        ScanResponse().copy(
+                                                            id = history[item].id
+                                                        ),
+                                                        history[item].imageUrl
+                                                    )
                                             }
                                         ) {
                                             Box(
@@ -199,7 +251,10 @@ fun DetectionListScreen(
                                                 Icon(
                                                     painterResource(R.drawable.open_in_new),
                                                     contentDescription = "Notification",
-                                                    tint = MaterialTheme.colorScheme.onSurface,
+                                                    tint =
+                                                        MaterialTheme
+                                                            .colorScheme
+                                                            .onSurface,
                                                 )
                                             }
                                         }

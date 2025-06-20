@@ -22,6 +22,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+           storeFile = rootProject.file("my-release-key.keystore")
+            storePassword = project.property("MYAPP_KEYSTORE_PASSWORD").toString()
+            keyAlias = project.property("MYAPP_KEY_ALIAS").toString()
+            keyPassword = project.property("MYAPP_KEY_PASSWORD").toString()
+        }
+    }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -29,6 +42,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -84,6 +98,7 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.lottie.compose)
+    implementation(libs.picasso)
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)

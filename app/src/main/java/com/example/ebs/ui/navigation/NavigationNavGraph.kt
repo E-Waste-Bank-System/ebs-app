@@ -34,45 +34,49 @@ import kotlinx.serialization.json.Json
 fun NavGraphBuilder.mainNav(
     navController: NavController,
     userPref: UserPreferencesRepository,
-    viewModelAuth: MainViewModel,
-    navigateTo: String?,
+    viewModelMain: MainViewModel,
 ){
     composable<Route.Welcome>{
-        WelcomeScreen(navController,viewModelAuth)
+        WelcomeScreen(viewModelMain)
     }
     composable<Route.SignUp> {
-        SignUpScreen(navController,userPref,viewModelAuth)
+        SignUpScreen(viewModelMain)
     }
     composable<Route.SignIn> {
-        SignInScreen(navController,userPref,viewModelAuth,navigateTo)
+        SignInScreen(viewModelMain)
     }
     composable<Route.Detail> { backStackEntry ->
-        val data: ScanResponse = backStackEntry.arguments?.getString("data")?.let {
+        val data: ScanResponse =
+            backStackEntry.arguments?.getString("data")?.let {
            Json.decodeFromString<ScanResponse>(it)
         } ?: error("Detection data missing")
-        val img: String? = backStackEntry.arguments?.getString("img")
-        WasteDetailScreen(data,img,viewModelAuth)
+        val img: String? =
+            backStackEntry.arguments?.getString("img")
+        val fromScan: String? =
+            backStackEntry.arguments?.getString("fromScan")
+        WasteDetailScreen(data,img,viewModelMain,fromScan.toBoolean())
     }
     composable<Route.Article> { backStackEntry ->
-        val data: Article = backStackEntry.arguments?.getString("data")?.let {
+        val data: Article =
+            backStackEntry.arguments?.getString("data")?.let {
             Json.decodeFromString<Article>(it)
         } ?: error("Article data missing")
-        ArticleScreen(navController,data,viewModelAuth)
+        ArticleScreen(data, viewModelMain)
     }
     composable<Route.Notifikasi> {
-        NotifikasiScreen(navController,viewModelAuth)
+        NotifikasiScreen(viewModelMain)
     }
     composable<Route.Dashboard> {
-        DashboardScreen(navController, userPref,viewModelAuth)
+        DashboardScreen(navController, userPref,viewModelMain)
     }
     composable<Route.Riwayat> {
-        DetectionListScreen(navController,viewModelAuth)
+        DetectionListScreen(navController,viewModelMain)
     }
     composable<Route.Scan> {
-        ScanScreen(navController,viewModelAuth)
+        ScanScreen(viewModelMain)
     }
     composable<Route.Profile> {
-        ProfileScreen(navController, userPref,viewModelAuth)
+        ProfileScreen(navController, userPref,viewModelMain)
     }
     dialog<Route.Location> {
         Lokasi(navController)
@@ -87,12 +91,12 @@ fun NavGraphBuilder.mainNav(
         Kontak(navController)
     }
     dialog<Route.Ubah> {
-        Ubah(viewModelAuth,userPref)
+        Ubah(viewModelMain,userPref)
     }
     dialog<Route.Settings> {
         ApplyRequest(navController)
     }
     dialog<Route.Exit> {
-        Exit(navController,viewModelAuth)
+        Exit(viewModelMain)
     }
 }

@@ -26,7 +26,6 @@ import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.ui.components.structures.CenterColumn
-import com.example.ebs.ui.components.texts.TextContentL
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleS
@@ -34,10 +33,11 @@ import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun Trending(
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     history: List<Detection>
 ){
     HeadlineDashboard {
@@ -46,7 +46,7 @@ fun Trending(
             modifier = Modifier
                 .padding(bottom = 15.dp, top = 10.dp)
         )
-        TextContentL(
+        TextTitleM(
             buildAnnotatedString {
             withStyle(SpanStyle(color = Color.Gray)) {
                 append(stringResource(R.string.seeall))
@@ -54,7 +54,7 @@ fun Trending(
         }, modifier = Modifier
                 .padding(bottom = 15.dp, top = 10.dp)
                 .clickable{
-                    viewModelAuth.navHandler.riwayat()
+                    viewModelMain.navHandler.riwayat()
                 }
         )
     }
@@ -84,6 +84,7 @@ fun Trending(
                     Text(
                         text = stringResource(R.string.noTrending),
                         modifier = Modifier
+                            .height(125.dp)
                             .padding(20.dp),
                         color = Color.Gray
                     )
@@ -96,7 +97,7 @@ fun Trending(
                         .padding(horizontal = 20.dp)
                 ) {
                     items(
-                        history.size,
+                        if (history.size > 5) 5 else history.size,
                         key = { hist -> history[hist].id },
                     ) { item ->
                         CardDashboard(
@@ -105,10 +106,8 @@ fun Trending(
                                 .height(125.dp)
                                 .width(240.dp)
                                 .clickable {
-                                    viewModelAuth.navHandler.detailFromMenu(
-                                        ScanResponse().copy(
-                                            id = history[item].id
-                                        ),
+                                    viewModelMain.navHandler.detailFromMenu(
+                                        ScanResponse().copy(id = history[item].id),
                                         history[item].imageUrl
                                     )
                                 }
@@ -118,11 +117,28 @@ fun Trending(
                                 hAli = Alignment.Start,
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .padding(top = 10.dp, bottom = 10.dp, end = 5.dp, start = 10.dp)
+                                    .padding(
+                                        top = 10.dp,
+                                        bottom = 10.dp,
+                                        end = 5.dp,
+                                        start = 10.dp
+                                    )
                             ) {
                                 Column {
                                     TextContentM(
-                                        history[item].createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                                        history[item]
+                                            .createdAt
+                                            .toLocalDateTime(
+                                                TimeZone.currentSystemDefault()
+                                            )
+                                            .date
+                                            .toJavaLocalDate()
+                                            .format(
+                                                DateTimeFormatter
+                                                    .ofPattern(
+                                                        "dd MMMM yyyy"
+                                                    )
+                                            ),
                                         modifier = Modifier.height(20.dp)
                                     )
                                     if(history[item].objects.isEmpty()) {
@@ -131,7 +147,14 @@ fun Trending(
                                             textAlign = TextAlign.Start
                                         )
                                     } else {
-                                        TextTitleS(history[item].objects.first().category, textAlign = TextAlign.Start)
+                                        TextContentM(
+                                            history[item].objects
+                                                .joinToString(", ") {
+                                                    it.category
+                                                },
+                                            textAlign = TextAlign.Start,
+                                            modifier = Modifier.width(100.dp)
+                                        )
                                     }
                                 }
 //                                Indicator("Pending", Color(0xFFE27700))

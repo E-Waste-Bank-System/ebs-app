@@ -7,13 +7,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun TextTitleL(text: Any, modifier: Modifier = Modifier, textAlign: TextAlign = TextAlign.Center){
     val style = MaterialTheme.typography.headlineMedium.copy(
         color = MaterialTheme.colorScheme.onBackground,
-        fontSize = 30.sp,
+        fontSize = 22.sp,
         fontWeight = FontWeight.Companion.Bold
     )
     Text(
@@ -21,6 +23,8 @@ fun TextTitleL(text: Any, modifier: Modifier = Modifier, textAlign: TextAlign = 
         style = style,
         overflow = TextOverflow.Companion.Ellipsis,
         textAlign = textAlign,
-        modifier = modifier
+        modifier = modifier,
+        lineHeight = TextUnit(value = 28f, type = TextUnitType.Sp)
     )
 }
+

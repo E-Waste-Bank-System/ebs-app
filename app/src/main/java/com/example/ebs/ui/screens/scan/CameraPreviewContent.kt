@@ -3,6 +3,8 @@ package com.example.ebs.ui.screens.scan
 import android.media.MediaScannerConnection
 import android.os.Environment
 import android.util.Log
+import android.view.OrientationEventListener
+import android.view.Surface
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -34,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -81,15 +84,14 @@ import java.io.File
 @Composable
 internal fun CameraPreviewContent(
     viewModel: ScanScreenViewModel,
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     modifier: Modifier = Modifier,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    LocalConfiguration.current
 
-    val upImage by viewModelAuth.upImage.collectAsState()
+    val upImage by viewModelMain.upImage.collectAsState()
     val surfaceRequest by viewModel.surfaceRequest.collectAsStateWithLifecycle()
     val imageCapture = remember { viewModel.imageCapture }
 
@@ -97,17 +99,36 @@ internal fun CameraPreviewContent(
     val wait = remember { mutableStateOf(false) }
 
     val userInfo = try {
-        viewModelAuth.localInfo
+        viewModelMain.localInfo
     } catch (e: UninitializedPropertyAccessException) {
-        viewModelAuth.firstOpen = true
-        viewModelAuth.navHandler.dashboard()
+        viewModelMain.firstOpen = true
+        viewModelMain.navHandler.dashboard()
         return
     }
 
     val reminder = rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(lifecycleOwner, viewModel.cameraSelector.collectAsStateWithLifecycle().value) {
+    LaunchedEffect(
+        lifecycleOwner,
+        viewModel.cameraSelector.collectAsStateWithLifecycle().value
+    ) {
         viewModel.bindToCamera(context.applicationContext, lifecycleOwner)
+    }
+
+    DisposableEffect(Unit) {
+        val orientationEventListener = object : OrientationEventListener(context) {
+            override fun onOrientationChanged(orientation: Int) {
+                val rotation = when (orientation) {
+                    in 45..134 -> Surface.ROTATION_270
+                    in 135..224 -> Surface.ROTATION_180
+                    in 225..314 -> Surface.ROTATION_90
+                    else -> Surface.ROTATION_0
+                }
+                imageCapture.targetRotation = rotation
+            }
+        }
+        orientationEventListener.enable()
+        onDispose { orientationEventListener.disable() }
     }
 
     surfaceRequest?.let { request ->
@@ -118,8 +139,13 @@ internal fun CameraPreviewContent(
                     try {
                         wait.value = true
                         val tempFile = withContext(Dispatchers.IO) {
-                            val inputStream = context.contentResolver.openInputStream(url)
-                            val temp = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+                            val inputStream =
+                                context.contentResolver.openInputStream(url)
+                            val temp =
+                                File(
+                                    context.cacheDir,
+                                    "upload_${System.currentTimeMillis()}.jpg"
+                                )
                             inputStream?.use { input ->
                                 temp.outputStream().use { output ->
                                     input.copyTo(output)
@@ -128,17 +154,26 @@ internal fun CameraPreviewContent(
                             temp
                         }
                         withContext(Dispatchers.IO) {
-                            viewModelAuth.uploadImage(tempFile.absolutePath)
+                            viewModelMain.uploadImage(tempFile.absolutePath)
                         }
                         val result = upImage
                         if (result != ScanResponse()) {
-                            viewModelAuth.navHandler.detailFromMenu(result, "")
+                            viewModelMain.navHandler.detailFromMenu(result, result.imgUrl,true)
                         } else {
-                            Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                            Toast
+                                .makeText(
+                                    context,
+                                    "Failed to upload image",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                         }
                     } catch (e: Exception) {
                         Log.e("CameraPreviewContent", "Error uploading image: ${e.localizedMessage}")
-                        Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Error: ${e.localizedMessage}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     } finally {
                         wait.value = false
                     }
@@ -150,7 +185,7 @@ internal fun CameraPreviewContent(
                 withStyle(SpanStyle(color = Color.White)) {
                     append("Pindai")
                 }
-            },viewModelAuth.navHandler,
+            },viewModelMain.navHandler,
                 noPad = true,
                 customBack = Color.Black.copy(alpha = 0f),
                 mod = true
@@ -162,8 +197,14 @@ internal fun CameraPreviewContent(
                             .align(Alignment.Center)
                             .fillMaxSize()
                             .aspectRatio(
-                                LocalWindowInfo.current.containerSize.let {
-                                    if (it.height != 0) it.width.toFloat() / it.height.toFloat() else 1f
+                                LocalWindowInfo
+                                    .current
+                                    .containerSize
+                                    .let {
+                                    if (it.height != 0)
+                                        it.width.toFloat() / it.height.toFloat()
+                                    else
+                                        1f
                                 }
                             )
                     )
@@ -190,7 +231,11 @@ internal fun CameraPreviewContent(
                             exit = fadeOut(tween(durationMillis = 1000, delayMillis = 0))
                         ) {
                             LottieAnimation(
-                                composition = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.aonm)).value,
+                                composition =
+                                    rememberLottieComposition(
+                                        LottieCompositionSpec
+                                            .RawRes(R.raw.aonm)
+                                    ).value,
                                 iterations = LottieConstants.IterateForever,
                                 modifier = Modifier
                                     .size(250.dp)
@@ -237,7 +282,8 @@ internal fun CameraPreviewContent(
                                 onClick = { viewModel.toggleCamera() }
                             ) {
                                 Icon(
-                                    painter = painterResource(R.drawable.camera_switch_outline), // Add a suitable icon
+                                    painter =
+                                        painterResource(R.drawable.camera_switch_outline), // Add a suitable icon
                                     contentDescription = "Switch Camera",
                                     tint = Color.White,
                                     modifier = Modifier
@@ -277,24 +323,33 @@ internal fun CameraPreviewContent(
                                         context.cacheDir,
                                         "captured_image_${System.currentTimeMillis()}.png"
                                     )
-                                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+                                    val outputOptions =
+                                        ImageCapture
+                                            .OutputFileOptions
+                                            .Builder(photoFile)
+                                            .build()
                                     imageCapture.takePicture(
                                         outputOptions,
                                         ContextCompat.getMainExecutor(context),
                                         object : ImageCapture.OnImageSavedCallback {
-                                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                            override fun onImageSaved(
+                                                output: ImageCapture.OutputFileResults
+                                            ) {
                                                 scope.launch {
                                                     try {
                                                         wait.value = true
                                                         // Save to gallery
 //                                                    val picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 //                                                    val picturesDir = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Electronic Waste Hub")
-                                                        val picturesDir = File(
-                                                            Environment.getExternalStoragePublicDirectory(
-                                                                Environment.DIRECTORY_PICTURES
-                                                            ), "Electronic Waste Hub"
-                                                        )
-                                                        if (!picturesDir.exists()) picturesDir.mkdirs()
+                                                        val picturesDir =
+                                                            File(
+                                                                Environment.getExternalStoragePublicDirectory(
+                                                                    Environment.DIRECTORY_PICTURES
+                                                                ),
+                                                                "Electronic Waste Hub"
+                                                            )
+                                                        if (!picturesDir.exists())
+                                                            picturesDir.mkdirs()
                                                         val galleryFile = File(
                                                             picturesDir,
                                                             "captured_image_${System.currentTimeMillis()}.png"
@@ -306,17 +361,27 @@ internal fun CameraPreviewContent(
                                                         // Scan file so it appears in gallery
                                                         MediaScannerConnection.scanFile(
                                                             context,
-                                                            arrayOf(galleryFile.absolutePath),
+                                                            arrayOf(
+                                                                galleryFile.absolutePath
+                                                            ),
                                                             arrayOf("image/png"),
                                                             null
                                                         )
                                                         withContext(Dispatchers.IO) {
-                                                            viewModelAuth.uploadImage(photoFile.toString())
+                                                            viewModelMain
+                                                                .uploadImage(
+                                                                    photoFile.toString()
+                                                                )
                                                         }
-                                                        val result = viewModelAuth.upImage.value
+                                                        val result =
+                                                            viewModelMain.upImage.value
                                                         if (result != ScanResponse()) {
-                                                            viewModelAuth.resetUpImage()
-                                                            viewModelAuth.navHandler.detailFromMenu(result, result.imgUrl)
+                                                            viewModelMain
+                                                                .resetUpImage()
+                                                            viewModelMain
+                                                                .navHandler.detailFromMenu(
+                                                                    result, result.imgUrl, true
+                                                                )
                                                             Log.e("CameraPreviewContent", "Image uploaded successfully: $result")
                                                         } else {
                                                             Toast.makeText(
@@ -332,7 +397,10 @@ internal fun CameraPreviewContent(
                                                         )
                                                         Toast.makeText(
                                                             context,
-                                                            if (e.localizedMessage == "rememberCoroutineScope left the composition") "Ups?! Gak jadi..." else e.localizedMessage,
+                                                            if (e.localizedMessage == "rememberCoroutineScope left the composition")
+                                                                "Ups?! Gak jadi..."
+                                                            else
+                                                                e.localizedMessage,
                                                             Toast.LENGTH_SHORT
                                                         ).show()
                                                     } finally {
@@ -386,7 +454,14 @@ internal fun CameraPreviewContent(
                                     shape = CircleShape
                                 )
                                 .clickable {
-                                    pickImageFromAlbumLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                    pickImageFromAlbumLauncher
+                                        .launch(
+                                            PickVisualMediaRequest(
+                                                ActivityResultContracts
+                                                    .PickVisualMedia
+                                                    .ImageOnly
+                                            )
+                                        )
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -416,7 +491,7 @@ internal fun CameraPreviewContent(
                 ) {
                     ReminderResult(
                         onCancel = {
-                            viewModelAuth.navHandler.back()
+                            viewModelMain.navHandler.back()
                         },
                         onConfirm = {
                             reminder.value = !reminder.value
@@ -430,7 +505,12 @@ internal fun CameraPreviewContent(
                             modifier = Modifier
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface)
+                                .background(
+                                    if (isSystemInDarkTheme())
+                                        MaterialTheme.colorScheme.background
+                                    else
+                                        MaterialTheme.colorScheme.surface
+                                )
                                 .padding(10.dp)
                         ) {
                             Image(

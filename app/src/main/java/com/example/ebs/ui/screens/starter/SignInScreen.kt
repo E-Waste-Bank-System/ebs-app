@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,9 +36,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.ebs.R
-import com.example.ebs.data.repositories.UserPreferencesRepository
+import com.example.ebs.service.UpdateService
 import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.ui.components.inputs.AestheticButton
 import com.example.ebs.ui.components.inputs.InputSpace
@@ -45,19 +45,20 @@ import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentL
 import com.example.ebs.ui.components.texts.TextContentM
-import com.example.ebs.ui.components.texts.TextTitleL
-import com.example.ebs.ui.components.texts.TextTitleS
+import com.example.ebs.ui.components.texts.TextTitleM
+import com.example.ebs.ui.components.texts.TextTitleXL
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun SignInScreen(
-    navController: NavController,
-    userPref: UserPreferencesRepository,
-    viewModelAuth: MainViewModel,
-    navigateTo: String?
+    viewModelMain: MainViewModel,
 ) {
+    val context = LocalContext.current
+    val updateService = UpdateService(context)
     val checkIn = remember { mutableStateOf(false) }
+    val updateReminder = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
 //        val token = userPref.authToken.firstOrNull()
@@ -66,22 +67,14 @@ fun SignInScreen(
         checkIn.value = true
     }
 
-    LaunchedEffect(navigateTo) {
-        if (navigateTo == "profile") {
-            viewModelAuth.navHandler.menuFromSignIn()
-        }
-    }
-
     Log.d("Route", "This is SignInScreen")
     if(checkIn.value) {
-        val context = LocalContext.current
-        val coroutineScope = rememberCoroutineScope()
         val exitDialogue = remember { mutableStateOf(false) }
 
         BackHandler { exitDialogue.value = true }
 
         if (exitDialogue.value) {
-            viewModelAuth.navHandler.exitDialogue()
+            viewModelMain.navHandler.exitDialogue()
             exitDialogue.value = false
         }
         CenterColumn(
@@ -89,7 +82,7 @@ fun SignInScreen(
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.background)
         ) {
-            TextTitleL(buildAnnotatedString {
+            TextTitleXL(buildAnnotatedString {
                 withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append(stringResource(R.string.helloSignIn))
                 }
@@ -109,14 +102,14 @@ fun SignInScreen(
             val waitEmail = remember { mutableStateOf(false) }
 
             InputSpace(stringResource(R.string.email), email)
-            InputSpace(stringResource(R.string.password), password)
+            InputSpace(stringResource(R.string.password), password, Modifier.imePadding())
 
             Spacer(modifier = Modifier.height(16.dp))
 
             AestheticButton(
                 content = {
                     if (!waitEmail.value) {
-                        TextTitleS(
+                        TextTitleM(
                             buildAnnotatedString {
                                 withStyle(SpanStyle(color = Color.White)) {
                                     append("Login")
@@ -137,13 +130,14 @@ fun SignInScreen(
                 onClick = {
                     waitEmail.value = true
                     coroutineScope.launch {
-                        viewModelAuth.authManagerState.signInWithEmail(email.value, password.value)
+                        viewModelMain.authManagerState
+                            .signInWithEmail(email.value, password.value)
                             .collect { result ->
                                 waitEmail.value = false
                                 if (result is AuthResponse.Success) {
 //                                    userPref.saveAuthToken(viewModelAuth.authManagerState.getAuthToken())
-                                    viewModelAuth.navHandler.menuFromSignIn()
-                                    Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelAuth.authManagerState.isSignedIn()}")
+                                    viewModelMain.navHandler.menuFromSignIn()
+                                    Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelMain.authManagerState.isSignedIn()}")
                                 } else {
                                     Log.e("AuthManager", result.toString())
                                 }
@@ -184,6 +178,7 @@ fun SignInScreen(
                 mutableStateOf(false)
             }
             if (wait.value) {
+                BackHandler { wait.value = !wait.value }
                 CenterRow(
                     modifier = Modifier
                         .fillMaxSize()
@@ -202,11 +197,18 @@ fun SignInScreen(
                     .clickable {
                         wait.value = true
                         coroutineScope.launch {
-                            viewModelAuth.authManagerState.loginGoogleUser(context)
+                            viewModelMain.authManagerState.loginGoogleUser(context)
                                 .collect { result ->
                                     wait.value = false
                                     if (result is AuthResponse.Success) {
-                                        viewModelAuth.navHandler.menuFromSignIn()
+                                        viewModelMain.navHandler.menuFromSignIn()
+                                    } else if (
+                                        result is AuthResponse.Error
+                                        && result.message?.contains("Developer console is not set up correctly")
+                                        == true
+                                        ) {
+                                        updateReminder.value = true
+                                        Log.e("AuthManager", "App update required: ${result.message}")
                                     } else {
                                         Log.e("AuthManager", result.toString())
                                     }
@@ -219,7 +221,7 @@ fun SignInScreen(
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    TextTitleS(
+                    TextContentL(
                         stringResource(R.string.signInGoogle),
                         modifier = Modifier
                             .padding(8.dp)
@@ -244,9 +246,12 @@ fun SignInScreen(
                         }
                     },
                     modifier = Modifier
-                        .clickable { viewModelAuth.navHandler.signUpFromSignIn() }
+                        .clickable { viewModelMain.navHandler.signUpFromSignIn() }
                 )
             }
         }
+    }
+    if (updateReminder.value) {
+        UpdateAvailable(updateReminder, coroutineScope, updateService)
     }
 }

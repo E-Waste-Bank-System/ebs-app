@@ -1,30 +1,24 @@
 package com.example.ebs.ui.screens.detail
 
+import android.content.Intent
+import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -34,35 +28,37 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.Top
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
+import coil.request.ImageRequest
+import coil.size.Size
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.Waste
 import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
@@ -71,86 +67,90 @@ import com.example.ebs.ui.components.gradients.getGredienButton
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
-import com.example.ebs.ui.components.texts.TextContentL
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.dialogues.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.delay
 import java.text.NumberFormat
-import kotlin.math.round
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun WasteDetailScreen(
     scanRes: ScanResponse = ScanResponse(),
     img: String? = "",
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
+    fromScan: Boolean = false,
     viewModel: WasteDetailViewModel = hiltViewModel()
 ) {
-    Log.d("Route", "This is Result")
+    val context = LocalContext.current
     var check by remember { mutableStateOf(false) }
     var detection by remember { mutableStateOf(Detection()) }
-    var scrollToLastItem by remember { mutableStateOf(false) }
-    var delayPoll:Long = 40000
+    val delayPoll:Long = 8000
+    val finishLine = delayPoll * 3
     var progressor by remember { mutableFloatStateOf(0.0f) }
     var total  by remember { mutableFloatStateOf(delayPoll.toFloat()) }
+    val wait: MutableState<Boolean> = remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         while (detection.status != "completed") {
-            detection = viewModelAuth.pollResult(scanRes.id)
-            if( progressor <= (delayPoll * 3 - 10000)) {
-                while(progressor < total + 15000) {
-                    delay(50)
-                    progressor += 75
+            detection = viewModelMain.pollResult(scanRes.id)
+            if (progressor <= finishLine) {
+                while (progressor < total - delayPoll / 2) {
+                    progressor += delayPoll / 75
+                    delay(delayPoll / 300)
                 }
-                Log.e("Progress", "Progress: $progressor, Total: $total, Delay: $delayPoll")
-                total += delayPoll
+                while (progressor < total) {
+                    progressor += delayPoll / 125
+                    delay(delayPoll / 150)
+                }
+                // Optionally update notification here
+                if (total >= finishLine - delayPoll) {
+                    total += finishLine - total - delayPoll * 0.2f
+                } else {
+                    total += delayPoll
+                }
             }
-            delay(delayPoll)
-            delayPoll -= if (delayPoll >= 10000) round(delayPoll.toDouble() / 2).toLong() else 10000
         }
     }
 
     LaunchedEffect(detection.status) {
-        if (detection.status == "completed") {
-            while (progressor < delayPoll * 3) {
+        if (detection.status == "completed" && progressor > delayPoll) {
+            while (progressor < finishLine) {
                 delay(10)
                 progressor += 1000
+            }
+            check = true
+        } else if (detection.status == "completed" && progressor < delayPoll){
+            while (progressor < finishLine) {
+                delay(1)
+                progressor += 400
             }
             check = true
         }
     }
 
-    if (!check){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            AnimatedVisibility(
-                visible = !check,
-                exit = fadeOut(tween(durationMillis = 1000, delayMillis = 0))
-            ) {
-                LottieAnimation(
-                    composition = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.amine)).value,
-                    iterations = LottieConstants.IterateForever,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(250.dp),
-                )
-                CircularProgressIndicator(
-                    progress = { progressor/delayPoll/3 },
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(250.dp),
-                    trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
-                )
+    DisposableEffect(Unit) {
+        onDispose {
+            if (detection.status != "completed") {
+                Log.e("Scans", "DisposableEffect called")
+                val intent = Intent(context, PollingForegroundService::class.java).apply {
+                    putExtra("scanId", scanRes.id)
+                    putExtra("status", detection.status)
+                }
+                ContextCompat.startForegroundService(context, intent)
             }
         }
     }
 
+    if (!check || detection.status != "completed"){
+        LoadingWasteDetail(
+            check, progressor, finishLine, detection, scanRes, context, viewModelMain, fromScan
+        )
+    }
+
+
+    Log.d("Route", "This is Result")
     if(check) {
         val listScan = detection.objects.groupBy { it.category }.map {
             val first = it.value.firstOrNull()
@@ -160,30 +160,35 @@ fun WasteDetailScreen(
                 description = first?.description ?: Waste().description.toString(),
                 riskLvl = first?.riskLvl ?: 0,
                 estValue = first?.estValue ?: 0.0,
+                boundingBox = first?.boundingBox ?: Waste().boundingBox,
                 suggestions = first?.suggestions ?: emptyList(),
                 total = it.value.size
             )
         }
 
+
+        val scrollToLastItem = remember { mutableStateOf(false) }
         val slideReminder = remember { mutableStateOf( listScan.size > 1) }
         val reminder = rememberSaveable { mutableStateOf(false) }
         val listState = rememberLazyListState()
         val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
 
         LaunchedEffect(scrollToLastItem) {
-            if (scrollToLastItem) {
+            if (scrollToLastItem.value) {
                 val lastIndex = listScan.size - 1
                 if (lastIndex >= 0) {
                     listState.animateScrollToItem(lastIndex)
                 }
-                scrollToLastItem = false
+                scrollToLastItem.value = false
             }
         }
 
-        TopBarPage("Result", viewModelAuth.navHandler){
+        TopBarPage("Result", viewModelMain.navHandler){
             LazyRow(
                 state = listState,
-                flingBehavior = flingBehavior
+                flingBehavior = flingBehavior,
+                modifier = Modifier
+                    .fillMaxSize()
             ) {
                 items(
                     listScan.size,
@@ -201,6 +206,8 @@ fun WasteDetailScreen(
                                     rememberScrollState()
                                 )
                         ) {
+                            var widthPx by remember { mutableStateOf(0) }
+                            var heightPx by remember { mutableStateOf(0) }
                             CenterColumn(
                                 hAli = Alignment.Start,
                                 modifier = Modifier
@@ -216,7 +223,10 @@ fun WasteDetailScreen(
                                             )
                                         ),
                                         shape = RoundedCornerShape(8.dp)
-                                    )
+                                    ).onGloballyPositioned { coordinates ->
+                                        widthPx = coordinates.size.width
+                                        heightPx = coordinates.size.height
+                                    }
                             ) {
                                 if (img == "") {
                                     Image(
@@ -226,22 +236,76 @@ fun WasteDetailScreen(
                                         modifier = Modifier
                                             .padding(15.dp)
                                             .width(300.dp)
-                                            .height(200.dp)
                                             .align(Alignment.CenterHorizontally)
                                             .clip(RoundedCornerShape(8.dp))
                                     )
                                 } else {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(img),
-                                        contentDescription = "Account Image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .padding(15.dp)
-                                            .width(300.dp)
-                                            .height(200.dp)
-                                            .align(Alignment.CenterHorizontally)
-                                            .clip(RoundedCornerShape(8.dp))
+                                    if (wait.value) {
+                                        CenterRow(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 40.dp)
+                                        ) {
+                                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                    val constraint = listOf(
+                                        1110,
+                                        1480
                                     )
+                                    val imageRequest = ImageRequest.Builder(context)
+                                        .data(img)
+                                        .size(Size.ORIGINAL)
+                                        .crossfade(true)
+                                        .build()
+                                    val ukuranGambar = remember { mutableIntStateOf(0) }
+                                    val painter = rememberAsyncImagePainter(model = imageRequest)
+                                    val state = painter.state
+                                    if (state is AsyncImagePainter.State.Success) {
+                                        val originalBitmap = (state.result.drawable as? BitmapDrawable)?.bitmap
+                                        if (originalBitmap != null) {
+                                            val resultCrop = cropImage(
+                                                floatArrayOf(
+                                                    listScan[item].boundingBox.x.toFloat(),
+                                                    listScan[item].boundingBox.y.toFloat(),
+                                                    listScan[item].boundingBox.width.toFloat(),
+                                                    listScan[item].boundingBox.height.toFloat()
+                                                ),
+                                                originalBitmap,
+                                                ukuranGambar.intValue,
+                                                constraint
+                                            )
+                                            val croppedBitmap = remember(originalBitmap) {
+                                                resultCrop?.bitMap
+                                            }
+                                            if (resultCrop != null) {
+                                                ukuranGambar.intValue = resultCrop.size
+                                            }
+                                            val imageBitmap = croppedBitmap?.asImageBitmap()
+                                            if (imageBitmap != null) {
+                                                wait.value = false
+                                                Image(
+                                                    bitmap = imageBitmap,
+                                                    contentDescription = "Cropped Image",
+                                                    modifier = Modifier
+                                                        .padding(15.dp)
+                                                        .sizeIn(maxWidth = 300.dp, maxHeight = 600.dp)
+                                                        .align(Alignment.CenterHorizontally)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Image(
+                                            painter = painter,
+                                            contentDescription = "Image",
+                                            modifier = Modifier
+                                                .padding(15.dp)
+                                                .size(ukuranGambar.intValue.dp)
+                                                .align(Alignment.CenterHorizontally)
+                                                .clip(RoundedCornerShape(8.dp))
+                                        )
+                                    }
                                 }
                             }
                             TextTitleM(
@@ -250,13 +314,14 @@ fun WasteDetailScreen(
                                     .fillMaxWidth(),
                                 textAlign = TextAlign.Start
                             )
+                            Spacer(Modifier.padding(2.dp))
                             TextContentM(
                                 listScan[item].description ?: Waste().description.toString(),
                                 textAlign = TextAlign.Start
                             )
                             Spacer(Modifier.padding(5.dp))
                             CenterRow {
-                                TextTitleS("Saran dan Tindakan dari AI")
+                                TextTitleM("Saran dan Tindakan dari AI")
                                 Image(
                                     painter = painterResource(R.drawable.ai),
                                     contentDescription = "ai",
@@ -265,6 +330,7 @@ fun WasteDetailScreen(
                                         .padding(5.dp)
                                 )
                             }
+                            Spacer(Modifier.padding(3.dp))
                             listScan[item].suggestions?.forEach { suggestionItem ->
                                 CenterRow {
                                     Box(
@@ -290,14 +356,66 @@ fun WasteDetailScreen(
                                 hAli = Alignment.Start,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                    .background(
+                                        MaterialTheme
+                                            .colorScheme
+                                            .primary
+                                            .copy(alpha = 0.2f)
+                                    )
                                     .border(
-                                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                                        BorderStroke(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.primary
+                                        ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
                             ) {
                                 TextTitleS(
-                                    "Prediksi Kerusakan E-waste",
+                                    "Level Kerusakan E-waste",
+                                    modifier = Modifier.padding(10.dp)
+                                )
+                                LinearProgressIndicator(
+                                    progress = {
+                                        listScan[item].damageLvl.toFloat() / 10
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .padding(horizontal = 10.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                CenterRow(
+                                    hArr = Arrangement.SpaceBetween,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp)
+                                ) {
+                                    TextContentM("Rendah")
+                                    TextContentM("Tinggi")
+                                }
+                            }
+                            Spacer(Modifier.padding(10.dp))
+                            CenterColumn(
+                                hAli = Alignment.Start,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        MaterialTheme
+                                            .colorScheme
+                                            .secondary
+                                            .copy(alpha = 0.2f)
+                                    )
+                                    .border(
+                                        BorderStroke(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.secondary
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                            ) {
+                                TextTitleS(
+                                    "Level Bahaya E-waste",
                                     modifier = Modifier.padding(10.dp)
                                 )
                                 LinearProgressIndicator(
@@ -308,7 +426,7 @@ fun WasteDetailScreen(
                                         .fillMaxWidth()
                                         .height(8.dp)
                                         .padding(horizontal = 10.dp),
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.colorScheme.secondary,
                                     trackColor = MaterialTheme.colorScheme.surfaceVariant
                                 )
                                 CenterRow(
@@ -348,9 +466,9 @@ fun WasteDetailScreen(
                                         .fillMaxWidth()
                                         .padding(10.dp)
                                 ) {
-                                    TextContentL(listScan[item].category)
-                                    TextContentL(listScan[item].total.toString())
-                                    TextContentL(
+                                    TextContentM(listScan[item].category)
+                                    TextContentM(listScan[item].total.toString())
+                                    TextContentM(
                                         "Rp. " + NumberFormat.getInstance()
                                             .format(listScan[item].estValue) + ",-",
                                     )
@@ -364,147 +482,15 @@ fun WasteDetailScreen(
             }
         }
         if (slideReminder.value) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable {
-                        slideReminder.value = !slideReminder.value
-                        // Scroll to the last item in the LazyRow
-                        val lastIndex = listScan.size - 1
-                        if (lastIndex >= 0) {
-                            slideReminder.value = false
-                            scrollToLastItem = true
-                        }
-                    }
-            ) {
-                val infiniteTransition = rememberInfiniteTransition(label = "slide")
-                val offsetX by infiniteTransition.animateFloat(
-                    initialValue = -20f,
-                    targetValue = 0f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(durationMillis = 500, easing = LinearOutSlowInEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ), label = "slideX"
-                )
-
-                Icon(
-                    painter = painterResource(R.drawable.chevron_left),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .size(30.dp)
-                        .offset { IntOffset(offsetX.dp.roundToPx(), 0) }
-                        .align(CenterEnd)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                )
-            }
+            SlideReminder(listScan,slideReminder,scrollToLastItem)
         }
         if (!reminder.value) {
             if(detection.objects.isEmpty()){
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f))
-                        .clickable {
-                            reminder.value = !reminder.value
-                        }
-                ){
-                    ReminderResult(
-                        onCancel = {
-                            viewModelAuth.navHandler.back()
-                        },
-                        onConfirm = {
-                            viewModelAuth.navHandler.scanFromDetail(ScanResponse(),"fromDetail")
-                        },
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .fillMaxWidth(0.95f)
-                            .clip(RoundedCornerShape(8.dp))
-                    ){
-                        CenterRow (
-                            modifier = Modifier
-                                .padding(start = 15.dp, end = 15.dp, top = 10.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface)
-                                .padding(10.dp)
-                        ){
-                            CenterColumn (
-                                hAli = Alignment.Start,
-                                vArr = Arrangement.Top,
-                                modifier = Modifier
-                                    .align(Top)
-                                    .padding(start = 5.dp)
-                            ){
-                                TextTitleS(
-                                    text = "Hmm... Sepertinya Bukan E-Waste \uD83E\uDD14",
-                                    textAlign = TextAlign.Start
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                TextContentM(
-                                    text = "Kami hanya mendeteksi sampah elektronik seperti kabel, baterai, dan komponen kecil.\n" +
-                                            "Yuk coba unggah e-waste yang sesuai! \uD83D\uDE0F",
-                                    modifier = Modifier.padding(bottom = 8.dp),
-                                    textAlign = TextAlign.Start
-                                )
-                            }
-                        }
-                    }
-                }
+                NotEwaste(viewModelMain, detection)
             } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f))
-                        .clickable {
-                            reminder.value = !reminder.value
-                        }
-                ) {
-                    ReminderResult(
-                        onCancel = {
-                            viewModelAuth.navHandler.back()
-                        },
-                        onConfirm = {
-                            reminder.value = !reminder.value
-                        },
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .fillMaxWidth(0.95f)
-                            .clip(RoundedCornerShape(8.dp))
-                    ) {
-                        CenterRow(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surface)
-                                .padding(10.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.star),
-                                contentDescription = "star",
-                                modifier = Modifier
-                                    .padding(5.dp)
-                                    .size(30.dp)
-                                    .align(Top),
-                                contentScale = ContentScale.Crop
-                            )
-                            CenterColumn(
-                                hAli = Alignment.Start,
-                                vArr = Arrangement.Top,
-                                modifier = Modifier
-                                    .align(Top)
-                            ) {
-                                TextTitleS(text = "Catatan:")
-                                TextContentM(
-                                    text = "Estimasi harga dan saran berbasis AI dapat berubah tergantung kondisi fisik perangkat dan modelnya. Untuk hasil maksimal, simpan perangkat dalam keadaan utuh saat disetor.",
-                                    modifier = Modifier.padding(bottom = 8.dp),
-                                    textAlign = TextAlign.Start
-                                )
-                            }
-                        }
-                    }
-                }
+                ReminderScanResult(viewModelMain, reminder)
             }
         }
     }
 }
+

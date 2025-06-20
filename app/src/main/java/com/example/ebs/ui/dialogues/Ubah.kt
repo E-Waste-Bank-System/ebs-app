@@ -1,8 +1,10 @@
 package com.example.ebs.ui.dialogues
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,16 +36,16 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun Ubah(
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     userPref: UserPreferencesRepository
 ) {
-    val namaBaru = remember { mutableStateOf(viewModelAuth.localInfo.name ?: "") }
+    val namaBaru = remember { mutableStateOf(viewModelMain.localInfo.name ?: "") }
     val waitEmail = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     Card(
         colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.tertiary,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primaryContainer,
+            contentColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
         CenterColumn(
@@ -80,17 +82,18 @@ fun Ubah(
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .fillMaxWidth(0.9f)
+                    .imePadding()
             )
             AestheticButton(
                 onClick = {
-                    viewModelAuth.firstOpen = true
+                    viewModelMain.firstOpen = true
                     waitEmail.value = true
                     scope.launch {
                         userPref.saveName(namaBaru.value)
                         delay(1000)
                         waitEmail.value = false
-                        viewModelAuth.navHandler.back()
-                        viewModelAuth.navHandler.dashboard()
+                        viewModelMain.navHandler.back()
+                        viewModelMain.navHandler.dashboard()
                     }
                 },
                 modifier = Modifier

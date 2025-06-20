@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,7 +44,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ebs.R
 import com.example.ebs.data.repositories.UserPreferencesRepository
-import com.example.ebs.service.WaterNotificationService
+import com.example.ebs.service.EBSNotificationService
 import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.ui.components.gradients.getGredienButton
 import com.example.ebs.ui.components.inputs.AestheticButton
@@ -62,21 +63,24 @@ import kotlinx.coroutines.launch
 fun ProfileScreen(
     navController: NavController,
     userPref: UserPreferencesRepository,
-    viewModelAuth: MainViewModel,
+    viewModelMain: MainViewModel,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     Log.d("Route", "This is Profile")
-    val postNotificationPermission = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+    val postNotificationPermission =
+        rememberPermissionState(
+            permission = Manifest.permission.POST_NOTIFICATIONS
+        )
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val waterNotificationService = WaterNotificationService(context)
+    val ebsNotificationService = EBSNotificationService(context)
 
     val userInfo = try {
-        viewModelAuth.localInfo
+        viewModelMain.localInfo
     } catch (e: UninitializedPropertyAccessException) {
-        viewModelAuth.firstOpen = true
-        viewModelAuth.navHandler.dashboard()
+        viewModelMain.firstOpen = true
+        viewModelMain.navHandler.dashboard()
         return
     }
 
@@ -87,15 +91,15 @@ fun ProfileScreen(
     }
 
     if(userInfo.emailVerified == "false") {
-        waterNotificationService.showBasicNotification()
+        ebsNotificationService.showUnverifiedNotification()
     }
 
     BotBarPage(
         navController = navController,
-        modifier = Modifier.padding(top = 25.dp),
-        hazeState = viewModelAuth.hazeState
+        hazeState = viewModelMain.hazeState
     ){
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.statusBarsPadding())
+        Spacer(modifier = Modifier.statusBarsPadding())
         Card(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -168,7 +172,7 @@ fun ProfileScreen(
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .align(Alignment.TopEnd)
                         .clickable {
-                            viewModelAuth.navHandler.ubah()
+                            viewModelMain.navHandler.ubah()
                         }
                 ) {
                     TextContentM(
@@ -197,28 +201,28 @@ fun ProfileScreen(
                     "Lokasi",painterResource(R.drawable.map_marker),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.lokasi()
+                            viewModelMain.navHandler.lokasi()
                         }
                 )
                 ProfileItem(
                     "Bantuan",painterResource(R.drawable.help_circle),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.bantuan()
+                            viewModelMain.navHandler.bantuan()
                         }
                 )
                 ProfileItem(
                     "Beri Kami Nilai",painterResource(R.drawable.comment_alert),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.beriNilai()
+                            viewModelMain.navHandler.beriNilai()
                         }
                 )
                 ProfileItem(
                     "Kontak Kami",painterResource(R.drawable.account_box),
                     modifier = Modifier
                         .clickable {
-                            viewModelAuth.navHandler.kontak()
+                            viewModelMain.navHandler.kontak()
                         }
                 )
             }
@@ -227,13 +231,13 @@ fun ProfileScreen(
         AestheticButton (
             onClick = {
                 coroutineScope.launch {
-                    viewModelAuth.authManagerState.signOut()
+                    viewModelMain.authManagerState.signOut()
                         .collect{result ->
                             if (result is AuthResponse.Success) {
-                                Log.e("Udah Keluar?", "${!viewModelAuth.authManagerState.isSignedIn()}")
-                                viewModelAuth.firstOpen = true
+                                Log.e("Udah Keluar?", "${!viewModelMain.authManagerState.isSignedIn()}")
+                                viewModelMain.firstOpen = true
                                 userPref.resetName()
-                                viewModelAuth.navHandler.welcomeFromMenu()
+                                viewModelMain.navHandler.welcomeFromMenu()
                             } else {
                                 Log.e("AuthManager", result.toString())
                             }

@@ -21,13 +21,18 @@ import com.example.ebs.ui.dialogues.ReqCam
 import com.example.ebs.ui.navigation.NavigationHandler
 
 @Composable
-fun CameraPermissionRequester(navHandler: NavigationHandler, onPermissionGranted: () -> Unit) {
+fun CameraPermissionRequester(
+    navHandler: NavigationHandler,
+    onPermissionGranted: () -> Unit
+) {
     val context = LocalContext.current
     val cameraPermission = Manifest.permission.CAMERA
     val showDialog = remember { mutableStateOf(false) }
 
     val permissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
             if (isGranted) {
                 onPermissionGranted()
             } else {
@@ -40,7 +45,10 @@ fun CameraPermissionRequester(navHandler: NavigationHandler, onPermissionGranted
         }
 
     LaunchedEffect(key1 = true) {
-        val permissionCheckResult = ContextCompat.checkSelfPermission(context, cameraPermission)
+        val permissionCheckResult =
+            ContextCompat.checkSelfPermission(
+                context, cameraPermission
+            )
         if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
             onPermissionGranted()
         } else {

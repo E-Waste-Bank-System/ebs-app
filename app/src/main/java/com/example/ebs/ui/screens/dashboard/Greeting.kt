@@ -21,16 +21,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.ebs.R
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextTitleL
-import com.example.ebs.ui.components.texts.TextTitleM
+import com.example.ebs.ui.components.texts.TextTitleXL
 import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
-fun Greeting(viewModelAuth: MainViewModel) {
+fun Greeting(viewModelMain: MainViewModel) {
     CenterRow(
         hArr = Arrangement.SpaceBetween,
         vAli = Alignment.Top,
@@ -39,17 +40,26 @@ fun Greeting(viewModelAuth: MainViewModel) {
             .padding(vertical = 20.dp, horizontal = 30.dp)
     ) {
         Column {
-            TextTitleL("Hallo, ${viewModelAuth.localInfo.name?.split(" ")?.firstOrNull() ?:""}")
-            TextTitleM(buildAnnotatedString {
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    append(stringResource(R.string.ayo))
+            TextTitleXL("Hallo, ${
+                try {
+                    viewModelMain.localInfo.name?.split(" ")?.firstOrNull() ?:""
+                } catch (e: UninitializedPropertyAccessException) {
+                    viewModelMain.firstOpen = true
+                    viewModelMain.navHandler.dashboard()
                 }
-            })
-            TextTitleM(buildAnnotatedString {
-                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                    append(stringResource(R.string.elek))
-                }
-            })
+            }")
+            TextTitleL(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                        append(stringResource(R.string.ayo))
+                    }
+                    append("\n")
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                        append(stringResource(R.string.elek))
+                    }
+                },
+                textAlign = TextAlign.Start
+            )
         }
 
         CenterRow(
@@ -58,7 +68,7 @@ fun Greeting(viewModelAuth: MainViewModel) {
                 .size(40.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.background)
-                .clickable { viewModelAuth.navHandler.notifikasiFromMenu() }
+                .clickable { viewModelMain.navHandler.notifikasiFromMenu() }
         ) {
             Box(
                 contentAlignment = Alignment.Center

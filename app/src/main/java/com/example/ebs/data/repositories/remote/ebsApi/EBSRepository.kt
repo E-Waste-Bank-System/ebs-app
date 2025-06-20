@@ -1,6 +1,5 @@
 package com.example.ebs.data.repositories.remote.ebsApi
 
-import android.util.Log
 import com.example.ebs.data.structure.remote.ebs.auth.UserMintaToken
 import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.head.Histories
@@ -24,16 +23,23 @@ class EBSRepository(
 //    }
 
     override suspend fun loginUser(userId: String): String {
-        val loginRequest = UserMintaToken(userId)
-        val response = ebsApiService.getUserToken(loginRequest)
+        val loginRequest =
+            UserMintaToken(userId)
+        val response =
+            ebsApiService.getUserToken(loginRequest)
         return response.token
     }
 
-    override suspend fun uploadImage(userId: String, filePath: String, token: String): ScanResponse {
+    override suspend fun uploadImage(
+        userId: String, filePath: String, token: String
+    ): ScanResponse {
      val file = File(filePath)
-     val requestFile = file.asRequestBody("image/png".toMediaTypeOrNull())
-     val imagePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
-     Log.e("its", "ITS IN")
+     val requestFile =
+         file.asRequestBody("image/png".toMediaTypeOrNull())
+     val imagePart =
+         MultipartBody.Part.createFormData(
+             "file", file.name, requestFile
+         )
      return ebsApiService.postDetection("Bearer $token", imagePart)
     }
     override suspend fun getHistory(token: String): Histories {
