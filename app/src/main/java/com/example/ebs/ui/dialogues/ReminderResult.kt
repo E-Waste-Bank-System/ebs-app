@@ -14,6 +14,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -26,6 +28,7 @@ fun ReminderResult(
     onCancel: () -> Unit,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
+    updateMod: MutableState<Boolean> = mutableStateOf(false),
     content: @Composable () -> Unit
 ) {
     Card(
@@ -53,26 +56,31 @@ fun ReminderResult(
                         .weight(1f)
                         .padding(horizontal = 5.dp)
                         .border(
-                            BorderStroke(1.dp, if(isSystemInDarkTheme()) Color.White else Color.Black),
+                            BorderStroke(
+                                1.dp,
+                                if (isSystemInDarkTheme()) Color.White else Color.Black
+                            ),
                             shape = RoundedCornerShape(8.dp)
                         )
-                        .clickable{
+                        .clickable {
                             onCancel()
                         }
                 ){
                     Text("Batalkan",modifier = Modifier.padding(10.dp))
                 }
-                CenterRow(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 5.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                        .clickable{
-                            onConfirm()
-                        }
-                ){
-                    Text("Konfirmasi",modifier = Modifier.padding(10.dp), color= Color.White)
+                if (!updateMod.value) {
+                    CenterRow(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 5.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable {
+                                onConfirm()
+                            }
+                    ) {
+                        Text("Konfirmasi", modifier = Modifier.padding(10.dp), color = Color.White)
+                    }
                 }
             }
         }

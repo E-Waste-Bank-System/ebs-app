@@ -29,7 +29,7 @@ class EBSNotificationService(
         return NotificationCompat.Builder(context, "ebs_notification")
             .setContentTitle("EBS Notification")
             .setContentText("Your Scanning in progress.")
-            .setSmallIcon(R.drawable.e_waste_illustration)
+            .setSmallIcon(R.drawable.ai)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -45,7 +45,7 @@ class EBSNotificationService(
         val notification = NotificationCompat.Builder(context, "ebs_notification")
             .setContentTitle("Silakan Verifikasi Akun Anda")
             .setContentText("Konfirmasi sudah dikirim ke email anda, silakan cek email anda untuk verifikasi akun")
-            .setSmallIcon(R.drawable.e_waste_illustration)
+            .setSmallIcon(R.drawable.ai)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -71,7 +71,7 @@ class EBSNotificationService(
         val notification= NotificationCompat.Builder(context,"ebs_notification")
             .setContentTitle("Detection Result Ready")
             .setContentText("Time to see the results of your scan!")
-            .setSmallIcon(R.drawable.e_waste_illustration)
+            .setSmallIcon(R.drawable.ai)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
@@ -103,7 +103,7 @@ class EBSNotificationService(
 //        val notification = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setAutoCancel(true)
 //            .build()
@@ -120,7 +120,7 @@ class EBSNotificationService(
 //        val notification = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setLargeIcon(image)
 //            .setStyle(
@@ -142,7 +142,7 @@ class EBSNotificationService(
 //        val notification = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setStyle(
 //                NotificationCompat
@@ -162,7 +162,7 @@ class EBSNotificationService(
 //        val notification = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setStyle(
 //                NotificationCompat
@@ -191,7 +191,7 @@ class EBSNotificationService(
 //        val notification1 = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setStyle(
 //                NotificationCompat
@@ -205,7 +205,7 @@ class EBSNotificationService(
 //        val notification2 = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setStyle(
 //                NotificationCompat
@@ -220,7 +220,7 @@ class EBSNotificationService(
 //        val summaryNotification = NotificationCompat.Builder(context, "water_reminder")
 //            .setContentTitle("Water Reminder")
 //            .setContentText("Time to drink some water!")
-//            .setSmallIcon(R.drawable.e_waste_illustration)
+//            .setSmallIcon(R.drawable.ai)
 //            .setPriority(NotificationCompat.PRIORITY_HIGH)
 //            .setStyle(
 //                NotificationCompat

@@ -164,8 +164,7 @@ class MainViewModel @Inject constructor(
                 if(result.isNotEmpty()) {
                     localArticles.value =
                         result.filter { article -> article.id !in localArticles.value.map { it.id } }
-                            .map { it
-                            }
+                            .map { it }
                 }
             } catch (e: Exception) {
                 Log.e("Scans", "Error loading articles: ${e.message}")
@@ -190,9 +189,6 @@ class MainViewModel @Inject constructor(
                     val viewedArticles =
                         localRepository.getAllDeletedScans().first()
                     result = listHistory.data
-                        .filter { it.id !in viewedArticles.map { scan ->
-                            scan.deletedScans }
-                        }
                         .filter {
                             scan -> scan.id !in localHistory.value.map{ it.id }
                         }
@@ -201,9 +197,8 @@ class MainViewModel @Inject constructor(
                         }
 
                     if(result.isNotEmpty()) {
-                        localHistory.value =
+                        localHistory.value +=
                             result.filter { scan -> scan.id !in localHistory.value.map { it.id } }
-                                .map { it }
                     }
                 } catch (e: Exception) {
                     Log.e("Scans", "Error loading histories: ${e.message}")

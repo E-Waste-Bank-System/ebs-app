@@ -201,6 +201,7 @@ fun SignInScreen(
                                 .collect { result ->
                                     wait.value = false
                                     if (result is AuthResponse.Success) {
+//                                        updateReminder.value = true
                                         viewModelMain.navHandler.menuFromSignIn()
                                     } else if (
                                         result is AuthResponse.Error
@@ -252,6 +253,6 @@ fun SignInScreen(
         }
     }
     if (updateReminder.value) {
-        UpdateAvailable(updateReminder, coroutineScope, updateService)
+        UpdateAvailable(updateReminder, coroutineScope, updateService, viewModelMain)
     }
 }

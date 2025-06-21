@@ -3,6 +3,8 @@ package com.example.ebs.ui.screens.article
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,10 +65,10 @@ fun ArticleScreen(
                         .align(Start)
                         .padding(
                             top =
-                            if (data.imageUrl == "" || data.imageUrl == null)
-                                15.dp
-                            else
-                                40.dp
+                                if (data.imageUrl == "" || data.imageUrl == null)
+                                    15.dp
+                                else
+                                    40.dp
                         ),
                     textAlign =
                         if (data.imageUrl == "" || data.imageUrl == null)
@@ -87,7 +90,43 @@ fun ArticleScreen(
                             .clip(RoundedCornerShape(8.dp))
                     )
                 }
-                data.content.blocks.forEach({
+
+                var counterTags = 0
+                val tagPerRow = 3
+
+                if(data.tags?.isNotEmpty() == true) {
+                    CenterColumn(
+                        modifier = Modifier
+                            .fillMaxWidth(0.95f)
+                            .padding(bottom = 15.dp),
+                    ) {
+                        while(counterTags < data.tags.size) {
+                            CenterRow (
+                                hArr = Arrangement.Start,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ){
+                                data.tags
+                                    .filter { data.tags.indexOf(it)-counterTags < tagPerRow }
+                                    .takeLast(tagPerRow)
+                                    .map { it }
+                                    .forEach {
+                                        TextContentM(
+                                            it,
+                                            modifier = Modifier
+                                                .padding(4.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.primaryContainer else Color.LightGray)
+                                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                                            textAlign = TextAlign.Start
+                                        )
+                                    }
+                            }
+                            counterTags += tagPerRow
+                        }
+                    }
+                }
+                data.content.blocks.forEach {
                     when (it.type) {
                         "header" -> {
                             TextTitleM(
@@ -98,6 +137,7 @@ fun ArticleScreen(
                                 textAlign = TextAlign.Start
                             )
                         }
+
                         "paragraph" -> {
                             TextContentL(
                                 it.data.text,
@@ -107,6 +147,7 @@ fun ArticleScreen(
                                 textAlign = TextAlign.Start
                             )
                         }
+
                         "list" -> {
                             when (it.data.style) {
                                 "unordered" -> {
@@ -120,6 +161,7 @@ fun ArticleScreen(
                                         )
                                     }
                                 }
+
                                 "ordered" -> {
                                     it.data.items.forEachIndexed { idx, item ->
                                         TextContentL(
@@ -131,6 +173,7 @@ fun ArticleScreen(
                                         )
                                     }
                                 }
+
                                 "checklist" -> {
                                     it.data.items.forEach { item ->
                                         val check =
@@ -149,6 +192,7 @@ fun ArticleScreen(
                                 }
                             }
                         }
+
                         "quote" -> {
                             Box(
                                 modifier = Modifier
@@ -163,6 +207,7 @@ fun ArticleScreen(
                                 )
                             }
                         }
+
                         "code" -> {
                             Box(
                                 modifier = Modifier
@@ -183,6 +228,7 @@ fun ArticleScreen(
                                 )
                             }
                         }
+
                         "delimiter" -> {
                             Box(
                                 modifier = Modifier
@@ -192,6 +238,7 @@ fun ArticleScreen(
                                 HorizontalDivider()
                             }
                         }
+
                         "table" -> {
                             SimpleTable(
                                 data = it.data.content,
@@ -201,7 +248,7 @@ fun ArticleScreen(
                             )
                         }
                     }
-                })
+                }
             }
         }
     }
