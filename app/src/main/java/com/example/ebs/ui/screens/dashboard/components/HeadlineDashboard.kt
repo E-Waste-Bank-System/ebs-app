@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.dashboard
+package com.example.ebs.ui.screens.dashboard.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth

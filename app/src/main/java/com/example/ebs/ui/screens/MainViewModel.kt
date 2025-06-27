@@ -35,6 +35,37 @@ class MainViewModel @Inject constructor(
     private val databaseManager: DatabaseManager,
     private val localRepository: LocalRepository
 ) : ViewModel() {
+
+    lateinit var navHandler: NavigationHandler
+    lateinit var localCred: String
+    lateinit var localInfo: GoogleProfileFields
+
+    var firstOpen: Boolean
+        get() = savedStateHandle["firstOpen"] ?: true
+        set(value) { savedStateHandle["firstOpen"] = value }
+
+    val localHistory: MutableStateFlow<List<Detection>> =
+        MutableStateFlow(listOf(Detection()))
+    private val localArticles: MutableStateFlow<List<Article>> =
+        MutableStateFlow(listOf(Article()))
+
+    val hazeState = HazeState()
+
+    val authManagerState: AuthManager
+        get() = authManager
+    private val ebsRepositoryState: EBSRepository
+        get() = ebsRepository
+    private val databaseManagerState: DatabaseManager
+        get() = databaseManager
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+    private val _history = MutableStateFlow(listOf(Detection()))
+    val history: StateFlow<List<Detection>> = _history
+    private val _articles = MutableStateFlow(listOf(Article()))
+    val articles: StateFlow<List<Article>> = _articles
+    private val _upImage = MutableStateFlow(ScanResponse())
+    val upImage: StateFlow<ScanResponse> = _upImage
     private val _navigateTo = MutableStateFlow<String?>(null)
     val navigateTo: StateFlow<String?> = _navigateTo
     fun updateNavigateTo(route: String?) {
@@ -46,35 +77,15 @@ class MainViewModel @Inject constructor(
     fun updateScanResult(result: String?) {
         _scanResult.value = result
     }
+    private val _takePicture = MutableStateFlow<Boolean?>(false)
+    private val takePicture: StateFlow<Boolean?> = _takePicture
+    fun updateTakePicture(result: Boolean?) {
+        _takePicture.value = result
+    }
 
-    var firstOpen: Boolean
-        get() = savedStateHandle["firstOpen"] ?: true
-        set(value) { savedStateHandle["firstOpen"] = value }
-
-    lateinit var navHandler: NavigationHandler
-    lateinit var localCred: String
-    lateinit var localInfo: GoogleProfileFields
-
-    val authManagerState: AuthManager
-        get() = authManager
-    private val ebsRepositoryState: EBSRepository
-        get() = ebsRepository
-    private val databaseManagerState: DatabaseManager
-        get() = databaseManager
-
-    val hazeState = HazeState()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
-    private val _history = MutableStateFlow(listOf(Detection()))
-    val history: StateFlow<List<Detection>> = _history
-    private val _articles = MutableStateFlow(listOf(Article()))
-    val articles: StateFlow<List<Article>> = _articles
-    private val _upImage = MutableStateFlow(ScanResponse())
-    val upImage: StateFlow<ScanResponse> = _upImage
-
-    private val localHistory: MutableStateFlow<List<Detection>> = MutableStateFlow(listOf(Detection()))
-    val localArticles: MutableStateFlow<List<Article>> = MutableStateFlow(listOf(Article()))
+    fun resetUpImage() {
+        _upImage.value = ScanResponse()
+    }
 
     fun initializeNavHandler(navController: NavController) {
         navHandler = NavigationHandler(navController)
@@ -89,12 +100,14 @@ class MainViewModel @Inject constructor(
         updateUserInfo(userData ?: GoogleProfileFields())
     }
 
-    fun resetUpImage() {
-        _upImage.value = ScanResponse()
-    }
-
     fun updateUserInfo(info: GoogleProfileFields) {
         localInfo = info
+    }
+
+    fun updateLocalHistory(id: String) {
+        localHistory.value -= localHistory.value.filter { it.id == id }
+        addDeletedScans(id)
+        refresh()
     }
 
     fun refresh() {
@@ -108,10 +121,12 @@ class MainViewModel @Inject constructor(
                 val jobHistory =
                     viewModelScope.async { loadHistory() }
                 val jobDelay =
-                    viewModelScope.async { delay(1000) }
+                    viewModelScope.async { delay(250) }
                 jobArticle.await()
                 jobHistory.await()
                 jobDelay.await()
+            } catch (e:Exception) {
+                Log.e("Scans", "Error refreshing data: ${e.message}")
             } finally {
                 _isLoading.update { false }
             }
@@ -152,32 +167,43 @@ class MainViewModel @Inject constructor(
 
     private fun loadArticles() {
         viewModelScope.launch {
-            var result = _articles.value
             try {
-                result = databaseManagerState.getArticles()
+                val result = databaseManagerState.getArticles()
                     .filter {
                         it.status == "published" && it.deletedAt == null
                     }
                     .filter{
-                            article -> article.id !in localArticles.value.map{ it.id }
+                        article -> article !in localArticles.value.map{ it }
                     }
                 if(result.isNotEmpty()) {
                     localArticles.value =
-                        result.filter { article -> article.id !in localArticles.value.map { it.id } }
-                            .map { it }
+                        result.filter { article ->
+                            article.id !in localArticles.value.map { it.id }
+                        }.map { it }
                 }
             } catch (e: Exception) {
-                Log.e("Scans", "Error loading articles: ${e.message}")
+                Log.e("ErrorA","${e.localizedMessage} ups")
+                if (e.message?.contains("Unable to resolve host", ignoreCase = true) == true) {
+                    localArticles.value = listOf(
+                        Article().copy(
+                            id = "Ups?! Tidak ada koneksi internet..."
+                        )
+                    )
+                }
             }
-            _articles.value = result.ifEmpty {
-                localArticles.value
+
+            _articles.value = localArticles.value.ifEmpty {
+                listOf(Article())
             }
         }
     }
 
     private fun loadHistory() {
         viewModelScope.launch {
+            val deletedScans =
+                localRepository.getAllDeletedScans().first()
             var result = _history.value
+
             if(authManagerState.isSignedIn()) {
                 try {
                     val userId =
@@ -186,42 +212,60 @@ class MainViewModel @Inject constructor(
                         ebsRepositoryState.loginUser(userId)
                     val listHistory =
                         ebsRepositoryState.getHistory(token)
-                    val viewedArticles =
-                        localRepository.getAllDeletedScans().first()
                     result = listHistory.data
-                        .filter {
-                            scan -> scan.id !in localHistory.value.map{ it.id }
+                        .filter{
+                            it.id !in  deletedScans.map { scan -> scan.deletedScans }
                         }
+                        .filter { scan -> localHistory.value.none {
+                            it.id == scan.id && it.objectsCount == scan.objectsCount
+                        }}
                         .map {
                             ebsRepositoryState.getDetection(token, it.id)
                         }
-
-                    if(result.isNotEmpty()) {
-                        localHistory.value +=
-                            result.filter { scan -> scan.id !in localHistory.value.map { it.id } }
-                    }
                 } catch (e: Exception) {
-                    Log.e("Scans", "Error loading histories: ${e.message}")
+                    Log.e("ErrorD","${e.localizedMessage} ups")
+                    if (e.message?.contains("Unable to resolve host", ignoreCase = true) == true) {
+                        localHistory.value = listOf(
+                            Detection().copy(
+                                id = "Ups?! Tidak ada koneksi internet..."
+                            )
+                        )
+                    }
                 }
-                if (result.isEmpty()) {
-                    result = localHistory.value
+                if (result.isNotEmpty()) {
+                    localHistory.value = result.filter { scan ->
+                        localHistory.value.none {
+                            it.id == scan.id && it.objectsCount == scan.objectsCount
+                        }
+                    } + localHistory.value.filter { scanId ->
+                        scanId.id !in result.map { it.id }
+                    }
                 }
             }
-            _history.value = result
+
+            _history.value = localHistory.value
+                .filter{
+                    it.id !in  deletedScans.map { scan -> scan.deletedScans }
+                }.ifEmpty {
+                    listOf(Detection())
+                }
         }
     }
 
     suspend fun uploadImage(filePath: String) {
-        val userId = authManagerState.getUserId()
-        val token =
-            ebsRepositoryState.loginUser(
-                userId ?: ""
-            )
-        val result =
-            ebsRepositoryState.uploadImage(
-                userId ?: "", filePath, token
-            )
-        _upImage.value = result
+        if(takePicture.value == true) {
+            updateTakePicture(false)
+            val userId = authManagerState.getUserId()
+            val token =
+                ebsRepositoryState.loginUser(
+                    userId ?: ""
+                )
+            val result =
+                ebsRepositoryState.uploadImage(
+                    userId ?: "", filePath, token
+                )
+            _upImage.value = result
+        }
     }
 
     suspend fun pollResultOnce(id: String): Detection {
@@ -230,8 +274,11 @@ class MainViewModel @Inject constructor(
             val token = ebsRepositoryState.loginUser(userId)
             ebsRepositoryState.getDetection(token, id)
         } catch (e: Exception) {
-            Log.e("Scans", "Error polling result: ${e.message}")
-            Detection()
+            Detection().copy(
+                id = e.message ?: "Error",
+                status = "completed",
+                objectsCount = 1
+            )
         }
     }
 
@@ -245,8 +292,8 @@ class MainViewModel @Inject constructor(
 //            }
             result
         } catch (e: Exception) {
-            Log.e("Scans", "Error polling result: ${e.message}")
             Detection().copy(
+                id = e.message ?: "Error",
                 status = "completed",
                 objectsCount = 1
             )

@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.notification
+package com.example.ebs.ui.screens.notification.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +13,7 @@ import com.example.ebs.ui.components.structures.CenterRow
 
 @Composable
 fun CardNotifikasi2(
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ){
     Card(

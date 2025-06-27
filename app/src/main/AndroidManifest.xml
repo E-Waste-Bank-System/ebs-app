@@ -55,7 +55,7 @@
         </provider>
 
         <service
-            android:name=".ui.screens.detail.PollingForegroundService"
+            android:name=".service.PollingForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
     </application>

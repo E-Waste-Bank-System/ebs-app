@@ -3,11 +3,13 @@ package com.example.ebs.ui.screens.profile
 import android.Manifest
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,6 +54,7 @@ import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.profile.components.ProfileItem
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -168,7 +171,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .padding(12.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color.LightGray)
+                        .background(if(isSystemInDarkTheme()) Color.LightGray else Color.DarkGray)
                         .padding(vertical = 4.dp, horizontal = 8.dp)
                         .align(Alignment.TopEnd)
                         .clickable {
@@ -234,12 +237,24 @@ fun ProfileScreen(
                     viewModelMain.authManagerState.signOut()
                         .collect{result ->
                             if (result is AuthResponse.Success) {
-                                Log.e("Udah Keluar?", "${!viewModelMain.authManagerState.isSignedIn()}")
+                                Log.e(
+                                    "Udah Keluar?",
+                                    "${!viewModelMain.authManagerState.isSignedIn()}"
+                                )
                                 viewModelMain.firstOpen = true
                                 userPref.resetName()
                                 viewModelMain.navHandler.welcomeFromMenu()
                             } else {
-                                Log.e("AuthManager", result.toString())
+                                Toast.makeText(
+                                    context,
+                                    if (result.toString()
+                                            .contains("Unable to resolve host", ignoreCase = true)
+                                    )
+                                        "Ups?! Tidak ada koneksi internet"
+                                    else
+                                        result.toString(),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                 }

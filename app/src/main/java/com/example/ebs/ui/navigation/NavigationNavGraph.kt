@@ -9,7 +9,7 @@ import androidx.navigation.compose.dialog
 import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.data.structure.remote.ebs.articles.Article
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
-import com.example.ebs.ui.dialogues.ApplyRequest
+import com.example.ebs.ui.dialogues.bases.ApplyRequest
 import com.example.ebs.ui.dialogues.Bantuan
 import com.example.ebs.ui.dialogues.BeriNilai
 import com.example.ebs.ui.dialogues.Exit

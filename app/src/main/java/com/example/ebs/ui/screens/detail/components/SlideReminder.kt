@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.detail
+package com.example.ebs.ui.screens.detail.components
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -38,8 +38,6 @@ fun SlideReminder(
         modifier = Modifier
             .fillMaxSize()
             .clickable {
-                slideReminder.value = !slideReminder.value
-                // Scroll to the last item in the LazyRow
                 val lastIndex = listScan.size - 1
                 if (lastIndex >= 0) {
                     slideReminder.value = false

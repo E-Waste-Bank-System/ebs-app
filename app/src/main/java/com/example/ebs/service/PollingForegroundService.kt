@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.detail
+package com.example.ebs.service
 
 import android.app.Notification
 import android.app.Service
@@ -7,7 +7,6 @@ import android.os.IBinder
 import android.util.Log
 import com.example.ebs.data.repositories.remote.ebsApi.EBSRepository
 import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
-import com.example.ebs.service.EBSNotificationService
 import com.example.ebs.service.auth.AuthManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

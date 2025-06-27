@@ -28,8 +28,10 @@ import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.dialogues.ReminderResult
+import com.example.ebs.ui.dialogues.bases.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.scan.components.CameraPermissionRequester
+import com.example.ebs.ui.screens.scan.components.CameraPreviewContent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState

@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.dashboard
+package com.example.ebs.ui.screens.dashboard.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +29,7 @@ import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun Sorotan(
@@ -74,6 +75,21 @@ fun Sorotan(
                     )
                 }
             }
+            articles.size == 1 && articles[0] == Article().copy(
+                id = "Ups?! Tidak ada koneksi internet..."
+            ) -> {
+                CenterColumn (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ){
+                    Text(
+                        text = "Ups?! Tidak ada koneksi internet...",
+                        modifier = Modifier
+                            .padding(20.dp),
+                        color = Color.Gray
+                    )
+                }
+            }
             else -> {
                 LazyColumn(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -89,6 +105,7 @@ fun Sorotan(
                             photo = article.imageUrl ?: "",
                             modifier = Modifier
                                 .height(100.dp)
+                                .fillParentMaxWidth()
                                 .clickable {
                                     viewModelMain.navHandler.articleFromMenu(article)
                                     viewModelMain.addViewCounter(article.id,article.viewCount)
@@ -126,7 +143,7 @@ fun Sorotan(
 //                                            )
 //                                    )
                                     TextContentM(
-                                        article.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                                        article.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).date.toJavaLocalDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
                                         modifier = Modifier.height(18.dp)
                                     )
                                 }

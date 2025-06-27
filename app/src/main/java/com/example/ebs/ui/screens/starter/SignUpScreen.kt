@@ -1,6 +1,7 @@
 package com.example.ebs.ui.screens.starter
 
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,12 +19,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.ebs.R
+import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.ui.components.inputs.AestheticButton
 import com.example.ebs.ui.components.inputs.InputSpace
@@ -40,6 +43,7 @@ fun SignUpScreen(
     viewModelMain: MainViewModel
 ) {
     Log.d("Route", "This is SignUp")
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val exitDialogue = remember { mutableStateOf(false) }
 
@@ -94,26 +98,48 @@ fun SignUpScreen(
                 }
             },
             onClick = {
+                viewModelMain.localHistory.value = mutableListOf(Detection())
                 waitEmail.value = true
                 coroutineScope.launch {
-                    viewModelMain.authManagerState
-                        .signUpWithEmail(email.value, password.value)
-                        .collect { result ->
-                        waitEmail.value = false
-                        when (result) {
-                            is AuthResponse.Success -> {
-                                viewModelMain.updateLocalCred(
-                                    viewModelMain.authManagerState
-                                        .getAuthToken() ?: ""
-                                )
-                                Log.e("UserId", viewModelMain.localCred)
-                                // viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
-                                viewModelMain.navHandler.menuFromSignUp()
+                    try {
+                        viewModelMain.authManagerState
+                            .signUpWithEmail(email.value, password.value)
+                            .collect { result ->
+                                waitEmail.value = false
+                                when (result) {
+                                    is AuthResponse.Success -> {
+                                        viewModelMain.updateLocalCred(
+                                            viewModelMain.authManagerState
+                                                .getAuthToken() ?: ""
+                                        )
+                                        Log.e("UserId", viewModelMain.localCred)
+                                        // viewModelAuth.localCred?.let { userPref.saveAuthToken(it) }
+                                        viewModelMain.navHandler.menuFromSignUp()
+                                    }
+
+                                    else -> {
+                                    Toast.makeText(
+                                        context,
+                                        if (result.toString()
+                                                .contains("Unable to resolve host", ignoreCase = true)
+                                        )
+                                            "Ups?! Tidak ada koneksi internet"
+                                        else
+                                            result.toString(),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                }
                             }
-                            else -> {
-                                Log.e("AuthManager", result.toString())
-                            }
-                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            context,
+                            if (e.localizedMessage?.contains("Unable to resolve host", ignoreCase = true) == true)
+                                "Ups?! Tidak ada koneksi internet"
+                            else
+                                e.localizedMessage,
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }

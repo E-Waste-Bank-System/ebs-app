@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.scan
+package com.example.ebs.ui.screens.scan.components
 
 import android.media.MediaScannerConnection
 import android.os.Environment
@@ -50,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
@@ -69,13 +68,15 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
+import com.example.ebs.ui.components.shapes.BoxShade
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.dialogues.ReminderResult
+import com.example.ebs.ui.dialogues.bases.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.scan.ScanScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,14 +90,15 @@ internal fun CameraPreviewContent(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val context = LocalContext.current
-    LocalConfiguration.current
 
     val upImage by viewModelMain.upImage.collectAsState()
     val surfaceRequest by viewModel.surfaceRequest.collectAsStateWithLifecycle()
     val imageCapture = remember { viewModel.imageCapture }
 
     val scope = rememberCoroutineScope()
+
     val wait = remember { mutableStateOf(false) }
+    val reminder = rememberSaveable { mutableStateOf(false) }
 
     val userInfo = try {
         viewModelMain.localInfo
@@ -105,8 +107,6 @@ internal fun CameraPreviewContent(
         viewModelMain.navHandler.dashboard()
         return
     }
-
-    val reminder = rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(
         lifecycleOwner,
@@ -137,6 +137,7 @@ internal fun CameraPreviewContent(
             if (url != null) {
                 scope.launch {
                     try {
+                        viewModelMain.updateTakePicture(true)
                         wait.value = true
                         val tempFile = withContext(Dispatchers.IO) {
                             val inputStream =
@@ -180,6 +181,7 @@ internal fun CameraPreviewContent(
                 }
             }
         }
+
         Box {
             TopBarPage(buildAnnotatedString {
                 withStyle(SpanStyle(color = Color.White)) {
@@ -337,6 +339,7 @@ internal fun CameraPreviewContent(
                                             ) {
                                                 scope.launch {
                                                     try {
+                                                        viewModelMain.updateTakePicture(true)
                                                         wait.value = true
                                                         // Save to gallery
 //                                                    val picturesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
@@ -399,6 +402,8 @@ internal fun CameraPreviewContent(
                                                             context,
                                                             if (e.localizedMessage == "rememberCoroutineScope left the composition")
                                                                 "Ups?! Gak jadi..."
+                                                            else if (e.localizedMessage?.contains("Unable to resolve host", ignoreCase = true) == true)
+                                                                "Ups?! Tidak ada koneksi internet"
                                                             else
                                                                 e.localizedMessage,
                                                             Toast.LENGTH_SHORT

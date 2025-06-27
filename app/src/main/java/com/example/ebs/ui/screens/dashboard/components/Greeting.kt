@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.dashboard
+package com.example.ebs.ui.screens.dashboard.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,7 +42,13 @@ fun Greeting(viewModelMain: MainViewModel) {
         Column {
             TextTitleXL("Hallo, ${
                 try {
-                    viewModelMain.localInfo.name?.split(" ")?.firstOrNull() ?:""
+                    val name = viewModelMain.localInfo.name?.split(" ")?.firstOrNull()
+                    if (name.isNullOrBlank()) {
+                        viewModelMain.firstOpen = true
+                        viewModelMain.navHandler.dashboard()
+                    } else {
+                        name
+                    }
                 } catch (e: UninitializedPropertyAccessException) {
                     viewModelMain.firstOpen = true
                     viewModelMain.navHandler.dashboard()

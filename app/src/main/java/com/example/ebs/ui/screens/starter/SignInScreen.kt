@@ -1,6 +1,7 @@
 package com.example.ebs.ui.screens.starter
 
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.ebs.R
+import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.service.UpdateService
 import com.example.ebs.service.auth.AuthResponse
 import com.example.ebs.ui.components.inputs.AestheticButton
@@ -47,7 +49,9 @@ import com.example.ebs.ui.components.texts.TextContentL
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleXL
+import com.example.ebs.ui.dialogues.UpdateAvailable
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.utils.MAX_VERSION
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,9 +60,10 @@ fun SignInScreen(
 ) {
     val context = LocalContext.current
     val updateService = UpdateService(context)
-    val checkIn = remember { mutableStateOf(false) }
-    val updateReminder = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val updateReminder = remember { mutableStateOf(false) }
+    val checkIn = remember { mutableStateOf(false) }
+
 
     LaunchedEffect(Unit) {
 //        val token = userPref.authToken.firstOrNull()
@@ -128,6 +133,7 @@ fun SignInScreen(
                     }
                 },
                 onClick = {
+                    viewModelMain.localHistory.value = mutableListOf(Detection())
                     waitEmail.value = true
                     coroutineScope.launch {
                         viewModelMain.authManagerState
@@ -137,9 +143,29 @@ fun SignInScreen(
                                 if (result is AuthResponse.Success) {
 //                                    userPref.saveAuthToken(viewModelAuth.authManagerState.getAuthToken())
                                     viewModelMain.navHandler.menuFromSignIn()
-                                    Log.e("Udah Masuk?", "Ini Udah Masuk? ${viewModelMain.authManagerState.isSignedIn()}")
+                                    Log.e(
+                                        "Udah Masuk?",
+                                        "Ini Udah Masuk? ${viewModelMain.authManagerState.isSignedIn()}"
+                                    )
                                 } else {
-                                    Log.e("AuthManager", result.toString())
+                                    Toast.makeText(
+                                        context,
+                                        if (result.toString()
+                                                .contains("Unable to resolve host", ignoreCase = true)
+                                        )
+                                            "Ups?! Tidak ada koneksi internet"
+                                        else if (result.toString()
+                                                .contains("invalid_credential", ignoreCase = true)
+                                        )
+                                            "Ups?!\n Coba Cek Kembali Email dan Password Anda"
+                                        else if (result.toString()
+                                                .contains("validation_failed", ignoreCase = true)
+                                        )
+                                            "Ups?! Belum Terisi Datanya"
+                                        else
+                                            result.toString(),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                     }
@@ -195,23 +221,37 @@ fun SignInScreen(
                     .fillMaxWidth(0.8f)
                     .height(60.dp)
                     .clickable {
+                        viewModelMain.localHistory.value = mutableListOf(Detection())
                         wait.value = true
                         coroutineScope.launch {
                             viewModelMain.authManagerState.loginGoogleUser(context)
                                 .collect { result ->
                                     wait.value = false
                                     if (result is AuthResponse.Success) {
-//                                        updateReminder.value = true
+                                        //                                        updateReminder.value = true
                                         viewModelMain.navHandler.menuFromSignIn()
                                     } else if (
                                         result is AuthResponse.Error
                                         && result.message?.contains("Developer console is not set up correctly")
                                         == true
-                                        ) {
+                                    ) {
                                         updateReminder.value = true
-                                        Log.e("AuthManager", "App update required: ${result.message}")
                                     } else {
-                                        Log.e("AuthManager", result.toString())
+                                        Log.e("Error", result.toString())
+                                        Toast.makeText(
+                                            context,
+                                            if (result.toString()
+                                                    .contains(
+                                                        "activity is cancelled by the user.",
+                                                        ignoreCase = true
+                                                    )
+                                            )
+                                                "Ups?! Tidak Jadi...\n" +
+                                                        "Coba cek internet anda..."
+                                            else
+                                                result.toString(),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                         }
@@ -253,6 +293,6 @@ fun SignInScreen(
         }
     }
     if (updateReminder.value) {
-        UpdateAvailable(updateReminder, coroutineScope, updateService, viewModelMain)
+        UpdateAvailable(MAX_VERSION, updateReminder, coroutineScope, updateService, viewModelMain)
     }
 }

@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.detail
+package com.example.ebs.ui.dialogues
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,28 +24,44 @@ import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.dialogues.ReminderResult
+import com.example.ebs.ui.dialogues.bases.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
 fun NotEwaste(
     viewModelMain: MainViewModel,
-    detection: Detection
+    detection: Detection,
+    id: String
 ){
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.5f))
             .clickable {
-                viewModelMain.navHandler.back()
+                if (detection.objectsCount == 0) {
+                    viewModelMain.navHandler.back()
+                } else {
+                    viewModelMain.updateLocalHistory(id)
+                    viewModelMain.navHandler.back()
+                }
             }
     ) {
         ReminderResult(
             onCancel = {
-                viewModelMain.navHandler.back()
+                if (detection.objectsCount == 0) {
+                    viewModelMain.navHandler.back()
+                } else {
+                    viewModelMain.updateLocalHistory(id)
+                    viewModelMain.navHandler.back()
+                }
             },
             onConfirm = {
-                viewModelMain.navHandler.scanFromDetail()
+                if(detection.objectsCount == 0) {
+                    viewModelMain.navHandler.scanFromDetail()
+                } else {
+                    viewModelMain.updateLocalHistory(id)
+                    viewModelMain.navHandler.back()
+                }
             },
             modifier = Modifier
                 .align(Alignment.Center)
@@ -61,7 +77,8 @@ fun NotEwaste(
                             MaterialTheme.colorScheme.background
                         else
                             MaterialTheme.colorScheme.surface
-                    ).padding(10.dp)
+                    )
+                    .padding(10.dp)
             ) {
                 CenterColumn(
                     hAli = Alignment.Start,
@@ -85,7 +102,8 @@ fun NotEwaste(
                                 "Kami hanya mendeteksi sampah elektronik seperti kabel, baterai, dan komponen kecil.\n" +
                                         "Yuk coba unggah e-waste yang sesuai! \uD83D\uDE0F"
                             else
-                                "Hmm bagaimana ya... \uD83D\uDE0F",
+                                "Hmm bagaimana ya... " +
+                                        "Sepertinya sudah dihapus \uD83D\uDE0F",
                         modifier = Modifier.padding(bottom = 8.dp),
                         textAlign = TextAlign.Start
                     )

@@ -10,6 +10,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +46,6 @@ fun Ubah(
     Card(
         colors = CardDefaults.cardColors().copy(
             containerColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primaryContainer,
-            contentColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
         CenterColumn(
@@ -63,7 +63,7 @@ fun Ubah(
                     modifier = Modifier
                         .padding(horizontal = 10.dp)
                 ) {
-                    TextTitleS(text = "Ubah Profil")
+                    Text(text = "Ubah Profil")
                     MyIcon(
                         painterResource(id = R.drawable.recycle),
                         contentDescription = "avItem.name",

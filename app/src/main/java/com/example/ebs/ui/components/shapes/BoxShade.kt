@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.scan
+package com.example.ebs.ui.components.shapes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.detail
+package com.example.ebs.ui.screens.detail.components
 
 import android.content.Context
 import android.content.Intent
@@ -30,6 +30,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
+import com.example.ebs.service.PollingForegroundService
 import com.example.ebs.ui.components.inputs.AestheticButton
 import com.example.ebs.ui.components.texts.TextTitleS
 import com.example.ebs.ui.screens.MainViewModel

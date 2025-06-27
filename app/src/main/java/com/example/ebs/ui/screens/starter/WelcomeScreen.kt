@@ -39,6 +39,7 @@ import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleL
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.utils.launchEmailIntent
 
 @SuppressLint("QueryPermissionsNeeded")
 @Composable

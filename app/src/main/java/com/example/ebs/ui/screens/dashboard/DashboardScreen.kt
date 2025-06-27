@@ -3,6 +3,7 @@ package com.example.ebs.ui.screens.dashboard
 import android.Manifest
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -28,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,17 +45,27 @@ import com.example.ebs.R
 import com.example.ebs.data.repositories.UserPreferencesRepository
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
 import com.example.ebs.service.EBSNotificationService
+import com.example.ebs.service.UpdateService
 import com.example.ebs.ui.components.gradients.getGredienBackground
 import com.example.ebs.ui.components.structures.CenterColumn
+import com.example.ebs.ui.dialogues.UpdateAvailable
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.dashboard.components.Greeting
+import com.example.ebs.ui.screens.dashboard.components.Sorotan
+import com.example.ebs.ui.screens.dashboard.components.Trending
+import com.example.ebs.utils.CURRENT_VERSION
+import com.example.ebs.utils.MAX_VERSION
+import com.example.ebs.utils.compareVersions
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -70,29 +82,45 @@ fun DashboardScreen(
             permission = Manifest.permission.POST_NOTIFICATIONS
         )
     val context = LocalContext.current
+    val updateService = UpdateService(context)
     val eBSNotificationService = EBSNotificationService(context)
 
+    val coroutineScope = rememberCoroutineScope()
+
+    val checkUpdate = remember { mutableStateOf("") }
+    val loadDone = remember { mutableStateOf(false) }
+    val updateReminder = remember { mutableStateOf(false) }
     val loadStatus = rememberSaveable { mutableStateOf(false) }
-    val check = remember { mutableStateOf(false) }
 
-    val scanResult by viewModelMain.scanResult.collectAsState()
-    LaunchedEffect(scanResult) {
-        if ((scanResult?.split(" ")?.first() ?: "") == "scan_result") {
-            viewModelMain.refresh()
-            val result = viewModelMain.pollResultOnce(
-                viewModelMain.scanResult.value?.split(" ")?.get(1) ?: ""
-            )
-            viewModelMain.navHandler.detailFromMenu(
-                ScanResponse(
-                    id = result.id,
-                    status = result.status,
-                    createdAt = result.createdAt,
-                ),
-                result.imageUrl
-            )
-            viewModelMain.updateScanResult(null)
+    val scanResultNotif by viewModelMain.scanResult.collectAsState()
+
+    LaunchedEffect(scanResultNotif) {
+        try {
+            if ((scanResultNotif?.split(" ")?.first() ?: "") == "scan_result") {
+                val result = viewModelMain.pollResultOnce(
+                    viewModelMain.scanResult.value?.split(" ")?.get(1) ?: ""
+                )
+                viewModelMain.navHandler.detailFromMenu(
+                    ScanResponse(
+                        id = result.id,
+                        status = result.status,
+                        createdAt = result.createdAt,
+                    ),
+                    result.imageUrl
+                )
+                viewModelMain.updateScanResult(null)
+                viewModelMain.refresh()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                if (e.localizedMessage?.contains("Unable to resolve host", ignoreCase = true) == true)
+                    "Ups?! Tidak ada koneksi internet"
+                else
+                    e.localizedMessage,
+                Toast.LENGTH_SHORT
+            ).show()
         }
-
     }
 
     LaunchedEffect(Unit) {
@@ -110,15 +138,43 @@ fun DashboardScreen(
                         )
                     }
                 }
-                val delayJob = async { delay(2000) }
+                val delayJob = async { delay(500) }
                 val checkJob = async { viewModelMain.authManagerState.isSignedIn() }
+                val checkUpdateJob = withContext(Dispatchers.IO) {
+                    async {
+                        if(true) {
+                            updateService.getLatestNightlyUrl(MAX_VERSION)
+                        }
+                        else
+                            ""
+                    }
+                }
                 refreshJob.await()
                 userDataJob.await()
                 localDataJob.await()
                 delayJob.await()
-                check.value = checkJob.await()
-                delay(1000)
+                checkUpdate.value = checkUpdateJob.await()
+                loadDone.value = checkJob.await()
+                delay(500)
             }
+
+            val regex = """/download/v([^/]+)/""".toRegex()
+            val version = regex.find(checkUpdate.value)?.groupValues?.get(1)
+            if (version == null) {
+                Log.e(
+                    "UpdateService",
+                    "No update available or already" +
+                            " on latest version $version - ${checkUpdate.value}"
+                )
+            } else if (compareVersions(version, CURRENT_VERSION) > 0) {
+                Log.e(
+                    "UpdateService",
+                    "Update available or already" +
+                            " on latest version $version - ${checkUpdate.value}"
+                )
+                updateReminder.value = true
+            }
+
             loadStatus.value = true
         } else {
             loadStatus.value = true
@@ -207,7 +263,7 @@ fun DashboardScreen(
 //               modifier = Modifier.size(48.dp)
 //           )
             AnimatedVisibility(
-                visible = !check.value,
+                visible = !loadDone.value,
 //                enter = fadeIn() + slideInVertically(initialOffsetY = { it }) + slideOutVertically()
 //slideOutHorizontally()
 //scaleOut()
@@ -225,6 +281,9 @@ fun DashboardScreen(
                 )
             }
         }
+    }
+    if (updateReminder.value) {
+        UpdateAvailable(MAX_VERSION,updateReminder, coroutineScope, updateService, viewModelMain)
     }
 }
 

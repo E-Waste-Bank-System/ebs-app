@@ -12,6 +12,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import com.example.ebs.utils.MAX_MINOR
+import com.example.ebs.utils.MAX_PATCH
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -20,23 +22,25 @@ import java.net.URL
 class UpdateService(
     private val context: Context
 ) {
-    private suspend fun getLatestNightlyUrl(
+    suspend fun getLatestNightlyUrl(
+        maxVersion: String = "0.0.0",
         baseVersion: String = "0.0.0",
-        maxMajor: Int = 1,
-        maxMinor: Int = 5,
-        maxPatch: Int = 0,
         fileName: String = "app-release.apk",
         progressor: MutableState<Float> = mutableFloatStateOf(0f),
-        wait: MutableState<Boolean> = mutableStateOf(false)
+        wait: MutableState<Boolean> = mutableStateOf(true)
     ): String {
+        val maxMajor = maxVersion.split(".").getOrNull(0)?.toIntOrNull() ?: 0
+        val maxMinor = maxVersion.split(".").getOrNull(1)?.toIntOrNull() ?: 0
+        val maxPatch = maxVersion.split(".").getOrNull(2)?.toIntOrNull() ?: 0
+        Log.e("UpdateService", "Checking URL...")
         val baseParts = baseVersion.split(".").map { it.toInt() }
         val urls = mutableListOf<String>()
         for (major in baseParts[0]..maxMajor) {
             val minMinor = if (major == baseParts[0]) baseParts[1] else 0
-            val maxMinorLoop = if (major == maxMajor) maxMinor else 5
+            val maxMinorLoop = if (major == maxMajor) maxMinor else MAX_MINOR
             for (minor in minMinor..maxMinorLoop) {
                 val minPatch = if (major == baseParts[0] && minor == baseParts[1]) baseParts[2] else 0
-                val maxPatchLoop = if (major == maxMajor && minor == maxMinor) maxPatch else 5
+                val maxPatchLoop = if (major == maxMajor && minor == maxMinor) maxPatch else MAX_PATCH
                 for (patch in minPatch..maxPatchLoop) {
                     val version = "$major.$minor.$patch-nightly"
                     val url = "https://github.com/E-Waste-Bank-System/ebs-app/releases/download/v$version/$fileName"
@@ -77,9 +81,9 @@ class UpdateService(
     }
 
     suspend fun downloadAndInstallUpdate(
-        wait: MutableState<Boolean>,
+        wait: MutableState<Boolean> = mutableStateOf(false),
         latest: String? = null,
-        progressor: MutableState<Float>,
+        progressor: MutableState<Float> = mutableFloatStateOf(0f),
         trigger: MutableState<Boolean> = mutableStateOf(false)
     ) {
         wait.value = !wait.value

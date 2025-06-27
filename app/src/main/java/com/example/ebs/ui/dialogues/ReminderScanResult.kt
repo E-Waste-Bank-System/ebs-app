@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.detail
+package com.example.ebs.ui.dialogues
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,6 +27,7 @@ import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleS
+import com.example.ebs.ui.dialogues.bases.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
 
 @Composable
@@ -42,7 +43,7 @@ fun ReminderScanResult(
                 reminder.value = !reminder.value
             }
     ) {
-        com.example.ebs.ui.dialogues.ReminderResult(
+        ReminderResult(
             onCancel = {
                 viewModelMain.navHandler.back()
             },

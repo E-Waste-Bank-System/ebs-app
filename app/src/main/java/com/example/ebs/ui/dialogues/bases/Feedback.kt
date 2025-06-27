@@ -1,4 +1,4 @@
-package com.example.ebs.ui.dialogues
+package com.example.ebs.ui.dialogues.bases
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

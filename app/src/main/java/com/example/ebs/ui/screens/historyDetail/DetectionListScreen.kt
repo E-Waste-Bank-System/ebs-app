@@ -53,7 +53,7 @@ import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleS
 import com.example.ebs.ui.navigation.BotBarPage
 import com.example.ebs.ui.screens.MainViewModel
-import com.example.ebs.ui.screens.dashboard.CardDashboard
+import com.example.ebs.ui.screens.dashboard.components.CardDashboard
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toLocalDateTime
@@ -124,7 +124,24 @@ fun DetectionListScreen(
                         color = Color.Gray
                     )
                 }
-            } else -> {
+            }
+            history.size == 1 && history[0] == Detection().copy(
+                id = "Ups?! Tidak ada koneksi internet..."
+            ) -> {
+                CenterColumn (
+                    modifier = Modifier
+                        .fillMaxSize()
+                ){
+                    Text(
+                        text = "Ups?! Tidak ada koneksi internet...",
+                        modifier = Modifier
+                            .height(125.dp)
+                            .padding(20.dp),
+                        color = Color.Gray
+                    )
+                }
+            }
+                else -> {
                     CenterColumn(
                         vArr = Arrangement.Top,
                         modifier = Modifier

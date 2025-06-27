@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.starter
+package com.example.ebs.utils
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException

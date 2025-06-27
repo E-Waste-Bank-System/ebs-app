@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.profile
+package com.example.ebs.ui.screens.profile.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

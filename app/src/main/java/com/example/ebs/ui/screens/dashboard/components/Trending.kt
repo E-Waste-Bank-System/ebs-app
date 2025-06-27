@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.dashboard
+package com.example.ebs.ui.screens.dashboard.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,7 +53,7 @@ fun Trending(
             }
         }, modifier = Modifier
                 .padding(bottom = 15.dp, top = 10.dp)
-                .clickable{
+                .clickable {
                     viewModelMain.navHandler.riwayat()
                 }
         )
@@ -83,6 +83,22 @@ fun Trending(
                 ){
                     Text(
                         text = stringResource(R.string.noTrending),
+                        modifier = Modifier
+                            .height(125.dp)
+                            .padding(20.dp),
+                        color = Color.Gray
+                    )
+                }
+            }
+            history.size == 1 && history[0] == Detection().copy(
+                id = "Ups?! Tidak ada koneksi internet..."
+            ) -> {
+                CenterColumn (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ){
+                    Text(
+                        text = "Ups?! Tidak ada koneksi internet...",
                         modifier = Modifier
                             .height(125.dp)
                             .padding(20.dp),

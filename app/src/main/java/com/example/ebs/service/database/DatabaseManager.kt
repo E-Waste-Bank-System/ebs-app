@@ -16,9 +16,10 @@ class DatabaseManager @Inject constructor(
                 .select()
                 .decodeList<Article>()
             articles
-        } catch (e: Exception) {
-            Log.e("Gagal","Inih article gaga $e")
-            emptyList()
+        } catch (e: Throwable) {
+            listOf(Article().copy(
+                id = "Ups?! Tidak ada koneksi internet..."
+            ))
         }
     }
 

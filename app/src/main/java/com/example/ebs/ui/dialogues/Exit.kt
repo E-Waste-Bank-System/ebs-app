@@ -2,6 +2,7 @@ package com.example.ebs.ui.dialogues
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.example.ebs.ui.dialogues.bases.CustomAlertDialogue
 import com.example.ebs.ui.screens.MainViewModel
 
 @Composable

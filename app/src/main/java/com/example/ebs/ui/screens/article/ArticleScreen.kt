@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.ebs.data.structure.remote.ebs.articles.Article
+import com.example.ebs.ui.components.shapes.SimpleTable
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
 import com.example.ebs.ui.components.structures.CenterRow
@@ -126,6 +127,7 @@ fun ArticleScreen(
                         }
                     }
                 }
+
                 data.content.blocks.forEach {
                     when (it.type) {
                         "header" -> {
@@ -254,34 +256,3 @@ fun ArticleScreen(
     }
 }
 
-@Composable
-fun SimpleTable(
-    data: List<List<String>>,
-    modifier: Modifier = Modifier
-) {
-    CenterColumn(modifier = modifier) {
-        data.forEachIndexed { index, row ->
-            CenterRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            ) {
-                row.forEachIndexed { cellIndex, cell ->
-                    TextContentM(
-                        text = cell,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
-                        textAlign = TextAlign.Start
-                    )
-                    if (cellIndex < row.lastIndex) {
-                        TextContentL("|")
-                    }
-                }
-            }
-            if (index < data.lastIndex) {
-                HorizontalDivider()
-            }
-        }
-    }
-}

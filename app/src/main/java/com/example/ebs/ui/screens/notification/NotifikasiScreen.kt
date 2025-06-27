@@ -27,6 +27,8 @@ import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentS
 import com.example.ebs.ui.components.texts.TextTitleS
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.notification.components.CardNotification
+import com.example.ebs.ui.screens.notification.components.CardNotifikasi2
 
 @Composable
 fun NotifikasiScreen(

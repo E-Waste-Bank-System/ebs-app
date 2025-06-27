@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.starter
+package com.example.ebs.ui.dialogues
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -39,13 +39,14 @@ import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleS
-import com.example.ebs.ui.dialogues.ReminderResult
+import com.example.ebs.ui.dialogues.bases.ReminderResult
 import com.example.ebs.ui.screens.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun UpdateAvailable(
+    maxVer: String,
     trigger: MutableState<Boolean>,
     coroutine: CoroutineScope,
     updateService: UpdateService,
@@ -67,7 +68,7 @@ fun UpdateAvailable(
             },
             onConfirm = {
                 coroutine.launch {
-                    updateService.downloadAndInstallUpdate(wait,"0.1.0", progressor, trigger)
+                    updateService.downloadAndInstallUpdate(wait,maxVer,progressor,trigger)
                 }
             },
             modifier = Modifier
@@ -100,7 +101,7 @@ fun UpdateAvailable(
                         trackColor = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
                     )
                     TextTitleM(
-                       "Updating...",
+                       "Downloading the latest\nversion apk...",
                         modifier = Modifier
                             .padding(bottom = 10.dp)
                             .align(BottomCenter)

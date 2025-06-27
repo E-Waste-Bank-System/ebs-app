@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.dashboard
+package com.example.ebs.ui.screens.dashboard.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.scan
+package com.example.ebs.ui.screens.scan.components
 
 import android.Manifest
 import android.content.pm.PackageManager

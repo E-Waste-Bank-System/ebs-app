@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -63,6 +64,7 @@ import com.example.ebs.R
 import com.example.ebs.data.structure.remote.ebs.detections.Waste
 import com.example.ebs.data.structure.remote.ebs.detections.head.Detection
 import com.example.ebs.data.structure.remote.ebs.detections.head.ScanResponse
+import com.example.ebs.service.PollingForegroundService
 import com.example.ebs.ui.components.gradients.getGredienButton
 import com.example.ebs.ui.components.shapes.TopBarPage
 import com.example.ebs.ui.components.structures.CenterColumn
@@ -70,7 +72,12 @@ import com.example.ebs.ui.components.structures.CenterRow
 import com.example.ebs.ui.components.texts.TextContentM
 import com.example.ebs.ui.components.texts.TextTitleM
 import com.example.ebs.ui.components.texts.TextTitleS
+import com.example.ebs.ui.dialogues.NotEwaste
+import com.example.ebs.ui.dialogues.ReminderScanResult
 import com.example.ebs.ui.screens.MainViewModel
+import com.example.ebs.ui.screens.detail.components.LoadingWasteDetail
+import com.example.ebs.ui.screens.detail.components.SlideReminder
+import com.example.ebs.utils.cropImage
 import kotlinx.coroutines.delay
 import java.text.NumberFormat
 
@@ -94,21 +101,35 @@ fun WasteDetailScreen(
 
     LaunchedEffect(Unit) {
         while (detection.status != "completed") {
-            detection = viewModelMain.pollResult(scanRes.id)
-            if (progressor <= finishLine) {
-                while (progressor < total - delayPoll / 2) {
-                    progressor += delayPoll / 75
-                    delay(delayPoll / 300)
+            try {
+                detection = viewModelMain.pollResult(scanRes.id)
+                if (progressor <= finishLine) {
+                    while (progressor < total - delayPoll / 2) {
+                        progressor += delayPoll / 75
+                        delay(delayPoll / 300)
+                    }
+                    while (progressor < total) {
+                        progressor += delayPoll / 125
+                        delay(delayPoll / 150)
+                    }
+                    // Optionally update notification here
+                    if (total >= finishLine - delayPoll) {
+                        total += finishLine - total - delayPoll * 0.2f
+                    } else {
+                        total += delayPoll
+                    }
                 }
-                while (progressor < total) {
-                    progressor += delayPoll / 125
-                    delay(delayPoll / 150)
-                }
-                // Optionally update notification here
-                if (total >= finishLine - delayPoll) {
-                    total += finishLine - total - delayPoll * 0.2f
-                } else {
-                    total += delayPoll
+            } catch (e: Exception) {
+                if (e.localizedMessage?.contains("coroutine scope left", ignoreCase = true) != true) {
+                    Toast.makeText(
+                        context,
+                        if (e.localizedMessage
+                            ?.contains("Unable to resolve host", ignoreCase = true) == true)
+                            "Ups?! Tidak ada koneksi internet"
+                        else
+                            e.localizedMessage,
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -152,17 +173,15 @@ fun WasteDetailScreen(
 
     Log.d("Route", "This is Result")
     if(check) {
-        val listScan = detection.objects.groupBy { it.category }.map {
-            val first = it.value.firstOrNull()
+        val listScan = detection.objects.map {
             Waste(
-                id = first?.id ?: Waste().id,
-                category = first?.category ?: Waste().category,
-                description = first?.description ?: Waste().description.toString(),
-                riskLvl = first?.riskLvl ?: 0,
-                estValue = first?.estValue ?: 0.0,
-                boundingBox = first?.boundingBox ?: Waste().boundingBox,
-                suggestions = first?.suggestions ?: emptyList(),
-                total = it.value.size
+                id = it.id,
+                category = it.category,
+                description = it.description ?: Waste().description.toString(),
+                riskLvl = it.riskLvl,
+                estValue = it.estValue ?: 0.0,
+                boundingBox = it.boundingBox,
+                suggestions = it.suggestions ?: emptyList()
             )
         }
 
@@ -172,8 +191,20 @@ fun WasteDetailScreen(
         val reminder = rememberSaveable { mutableStateOf(false) }
         val listState = rememberLazyListState()
         val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+        val constraint = listOf(
+            1110,
+            1480
+        )
+        val imageRequest = ImageRequest.Builder(context)
+            .data(img)
+            .size(Size.ORIGINAL)
+            .crossfade(true)
+            .build()
+        val ukuranGambar = remember { mutableIntStateOf(0) }
+        val painter = rememberAsyncImagePainter(model = imageRequest)
+        val state = painter.state
 
-        LaunchedEffect(scrollToLastItem) {
+        LaunchedEffect(scrollToLastItem.value) {
             if (scrollToLastItem.value) {
                 val lastIndex = listScan.size - 1
                 if (lastIndex >= 0) {
@@ -223,7 +254,8 @@ fun WasteDetailScreen(
                                             )
                                         ),
                                         shape = RoundedCornerShape(8.dp)
-                                    ).onGloballyPositioned { coordinates ->
+                                    )
+                                    .onGloballyPositioned { coordinates ->
                                         widthPx = coordinates.size.width
                                         heightPx = coordinates.size.height
                                     }
@@ -249,18 +281,6 @@ fun WasteDetailScreen(
                                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                                         }
                                     }
-                                    val constraint = listOf(
-                                        1110,
-                                        1480
-                                    )
-                                    val imageRequest = ImageRequest.Builder(context)
-                                        .data(img)
-                                        .size(Size.ORIGINAL)
-                                        .crossfade(true)
-                                        .build()
-                                    val ukuranGambar = remember { mutableIntStateOf(0) }
-                                    val painter = rememberAsyncImagePainter(model = imageRequest)
-                                    val state = painter.state
                                     if (state is AsyncImagePainter.State.Success) {
                                         val originalBitmap = (state.result.drawable as? BitmapDrawable)?.bitmap
                                         if (originalBitmap != null) {
@@ -289,7 +309,24 @@ fun WasteDetailScreen(
                                                     contentDescription = "Cropped Image",
                                                     modifier = Modifier
                                                         .padding(15.dp)
-                                                        .sizeIn(maxWidth = 300.dp, maxHeight = 600.dp)
+                                                        .sizeIn(
+                                                            maxWidth = 300.dp,
+                                                            maxHeight = 600.dp
+                                                        )
+                                                        .align(Alignment.CenterHorizontally)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                )
+                                            } else {
+                                                wait.value = false
+                                                Image(
+                                                    painter = rememberAsyncImagePainter(img),
+                                                    contentDescription = "Image",
+                                                    modifier = Modifier
+                                                        .padding(15.dp)
+                                                        .sizeIn(
+                                                            maxWidth = 300.dp,
+                                                            maxHeight = 600.dp
+                                                        )
                                                         .align(Alignment.CenterHorizontally)
                                                         .clip(RoundedCornerShape(8.dp))
                                                 )
@@ -356,6 +393,7 @@ fun WasteDetailScreen(
                                 hAli = Alignment.Start,
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
                                     .background(
                                         MaterialTheme
                                             .colorScheme
@@ -400,6 +438,7 @@ fun WasteDetailScreen(
                                 hAli = Alignment.Start,
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
                                     .background(
                                         MaterialTheme
                                             .colorScheme
@@ -413,6 +452,7 @@ fun WasteDetailScreen(
                                         ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
+
                             ) {
                                 TextTitleS(
                                     "Level Bahaya E-waste",
@@ -467,7 +507,7 @@ fun WasteDetailScreen(
                                         .padding(10.dp)
                                 ) {
                                     TextContentM(listScan[item].category)
-                                    TextContentM(listScan[item].total.toString())
+                                    Spacer(Modifier.padding(10.dp))
                                     TextContentM(
                                         "Rp. " + NumberFormat.getInstance()
                                             .format(listScan[item].estValue) + ",-",
@@ -486,7 +526,7 @@ fun WasteDetailScreen(
         }
         if (!reminder.value) {
             if(detection.objects.isEmpty()){
-                NotEwaste(viewModelMain, detection)
+                NotEwaste(viewModelMain, detection, scanRes.id)
             } else {
                 ReminderScanResult(viewModelMain, reminder)
             }

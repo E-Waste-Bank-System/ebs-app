@@ -1,4 +1,4 @@
-package com.example.ebs.ui.screens.detail
+package com.example.ebs.utils
 
 import android.graphics.Bitmap
 import android.util.Log
